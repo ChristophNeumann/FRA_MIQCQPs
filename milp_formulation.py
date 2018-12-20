@@ -1,8 +1,9 @@
 from pyomo.environ import *
 
 
-def solve_milp(Q, beta, BigM):
+def solve_milp(Q, beta, B, b, BigM):
     # Model declaration
+    # Y := \{ y| By <= b\}. Maybe only box constraints? / additional modelling capacity for box constraints?
     model = ConcreteModel()
     # Dimension of y
     model.m = Q.shape[1]
@@ -31,14 +32,21 @@ def solve_milp(Q, beta, BigM):
     def compl_constr_bigm2(model, j):
         return model.v[j] <= BigM*model.b[j]
 
+    #Todo: Add linear constraints Y := \{ y| By <= b\}
+
     model.lgs = Constraint(model.J, rule=lgs_constr)
     model.compl_1 = Constraint(model.J, rule=compl_constr_bigm1)
     model.compl_2 = Constraint(model.J, rule=compl_constr_bigm2)
     # Solver
     # possible choices: 'ipopt' (NLP), 'glpk' (MIP)
-    opt = SolverFactory('glpk')
+    opt = SolverFactory('gurobi')
     # Solve statement
     result_obj = opt.solve(model, tee=True)
 
+    #Return the optimal objective value which serves as a Lipschitz constant
+    L_const = value(model.obj)
+    print(str(L_const))
+
     model.pprint()
+
     return result_obj
