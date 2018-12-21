@@ -13,7 +13,7 @@ def solve_milp(Q, beta, lb, ub, BigM):
 
     def fb(model, i):
         # lower bound, upper bound pair is declared for each index element
-        return (lb[i-1], ub[i-1])
+        return lb[i-1], ub[i-1]
 
     model.y = Var(model.J, domain=Reals, bounds=fb)
     model.u = Var(model.J, domain=NonNegativeReals)
