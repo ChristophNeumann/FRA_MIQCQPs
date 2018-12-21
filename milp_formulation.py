@@ -1,16 +1,21 @@
 from pyomo.environ import *
 
 
-def solve_milp(Q, beta, B, b, BigM):
+def solve_milp(Q, beta, lb, ub, BigM):
+    # TODO: Implement additional polyhedral constraints of the form B*y=b
     # Model declaration
-    # Y := \{ y| By <= b\}. Maybe only box constraints? / additional modelling capacity for box constraints?
     model = ConcreteModel()
     # Dimension of y
     model.m = Q.shape[1]
     # Index set
     model.J = RangeSet(1, model.m)
     # Decision variables
-    model.y = Var(model.J, domain=Reals)
+
+    def fb(model, i):
+        # lower bound, upper bound pair is declared for each index element
+        return (lb[i-1], ub[i-1])
+
+    model.y = Var(model.J, domain=Reals, bounds=fb)
     model.u = Var(model.J, domain=NonNegativeReals)
     model.v = Var(model.J, domain=NonNegativeReals)
     model.b = Var(model.J, domain=Binary)
@@ -30,22 +35,23 @@ def solve_milp(Q, beta, B, b, BigM):
         return model.u[j] <= BigM*model.b[j]
 
     def compl_constr_bigm2(model, j):
-        return model.v[j] <= BigM*model.b[j]
-
-    #Todo: Add linear constraints Y := \{ y| By <= b\}
+        return model.v[j] <= BigM*(1-model.b[j])
 
     model.lgs = Constraint(model.J, rule=lgs_constr)
     model.compl_1 = Constraint(model.J, rule=compl_constr_bigm1)
     model.compl_2 = Constraint(model.J, rule=compl_constr_bigm2)
+    # Write the LP file for debugging purposes
+    model.write('model.lp')
     # Solver
-    # possible choices: 'ipopt' (NLP), 'glpk' (MIP)
+    # possible choices: 'ipopt' (NLP), 'glpk' (MIP), 'gurobi'
     opt = SolverFactory('gurobi')
     # Solve statement
     result_obj = opt.solve(model, tee=True)
 
     #Return the optimal objective value which serves as a Lipschitz constant
-    L_const = value(model.obj)
-    print(str(L_const))
+    # TODO: 'value' is not known, other command?
+    #L_const = value(model.obj)
+    #print(str(L_const))
 
     model.pprint()
 
