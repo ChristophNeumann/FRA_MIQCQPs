@@ -10,7 +10,7 @@ Q is assumed to be square, symmetric but possibly indefinite
 '''
 Q = np.array([[3, 0], [-1, 2]])
 beta = np.zeros((2, 1))
-lb = np.array([1, 1])
+lb = np.array([-1, -1])
 ub = np.array([2, 2])
 # Needed for the MILP formulation
 BigM = max(ub)

@@ -44,7 +44,7 @@ def solve_milp(Q, beta, lb, ub, BigM):
     model.write('model.lp')
     # Solver
     # possible choices: 'ipopt' (NLP), 'glpk' (MIP), 'gurobi'
-    opt = SolverFactory('gurobi')
+    opt = SolverFactory('glpk')
     # Solve statement
     result_obj = opt.solve(model, tee=True)
 
