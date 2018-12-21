@@ -1,7 +1,7 @@
 from pyomo.environ import *
 
 
-def solve_nonlinear(Q, beta):
+def solve_nonlinear(Q, beta, lb, ub):
     # Model declaration
     model = ConcreteModel()
     # Dimension of y
@@ -9,7 +9,12 @@ def solve_nonlinear(Q, beta):
     # Index set
     model.J = RangeSet(1, model.m)
     # Decision variables
-    model.y = Var(model.J, domain=Reals)
+
+    def fb(model, i):
+        # lower bound, upper bound pair is declared for each index element
+        return (lb[i-1], ub[i-1])
+
+    model.y = Var(model.J, domain=Reals, bounds=fb)
     model.u = Var(model.J, domain=NonNegativeReals)
     model.v = Var(model.J, domain=NonNegativeReals)
     # objective function

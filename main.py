@@ -15,6 +15,7 @@ ub = np.array([2, 2])
 # Needed for the MILP formulation
 BigM = max(ub)
 
-#result_nlp = nonlinear_formulation.solve_nonlinear(Q, beta)
+result_nlp = nonlinear_formulation.solve_nonlinear(Q, beta, lb, ub)
+print(result_nlp)
 result_milp = milp_formulation.solve_milp(Q, beta, lb, ub, BigM)
 print(result_milp)
