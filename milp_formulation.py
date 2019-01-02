@@ -1,5 +1,5 @@
 from pyomo.environ import *
-
+import numpy as np
 
 def solve_milp(Q, beta, lb, ub, BigM):
     # TODO: Implement additional polyhedral constraints of the form B*y=b
@@ -44,7 +44,7 @@ def solve_milp(Q, beta, lb, ub, BigM):
     model.write('model.lp')
     # Solver
     # possible choices: 'ipopt' (NLP), 'glpk' (MIP), 'gurobi'
-    opt = SolverFactory('glpk')
+    opt = SolverFactory('gurobi')
     # Solve statement
     result_obj = opt.solve(model, tee=True)
 
@@ -56,3 +56,48 @@ def solve_milp(Q, beta, lb, ub, BigM):
     model.pprint()
 
     return result_obj
+
+
+def bigM(Q,beta,lb,ub):
+
+    """Compute the big M of the above MILP problem.
+    This version is for given lower and upper bounds and computes an individual bigM for each u_i, v_i.
+
+    Obviously, if we want a single bigM for the model, we can just use the maximum of all values.
+    Currently, it is computed with an explicit formula, iterating through two for-loops only making use of lower- and
+    upper bounds. If we additionally have a potentially tighter polyhedral set P available, we may replace it by
+    the linear optimization problem
+
+    u[i] = max{ max_{y in P} q_i^T y + beta,0}
+    v[i] = max{-min_{y in P} q_i^T y + beta, 0}.
+
+    The idea of the computation is that it follows from the LPCC formulation that u is bounded by the maximum of
+
+    Qy + beta
+
+    and that v is bounded by the minimum of
+
+    Qy + beta
+
+    multiplied with (-1).
+
+    """
+
+    p = Q.shape[0]
+    M_u = np.zeros(p)
+    M_v = np.zeros(p)
+
+    for i in range(0,p):
+        for j in range(0,Q.shape[1]):
+            if Q[i,j]>0:
+                M_u[i] += Q[i,j]*ub[i]
+                M_v[i] += Q[i,j]*lb[i]
+            if Q[i,j]< 0:
+                M_u[i] += Q[i,j]*lb[i]
+                M_v[i] += Q[i,j]*ub[i]
+        M_u[i] = max(M_u[i] + beta[i], 0)
+        M_v[i] = max(-M_v[i] + beta[i], 0)
+        print(M_u)
+        print(M_v)
+
+    return M_u, M_v

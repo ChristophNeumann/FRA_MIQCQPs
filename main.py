@@ -12,10 +12,13 @@ Q = 2*np.array([[3, -0.5], [-0.5, 2]])
 beta = np.zeros((2, 1))
 lb = np.array([-1, -1])
 ub = np.array([2, 2])
+
+
 # TODO: Add general By<=b constraints
 # Needed for the MILP formulation
 # TODO: Wie kommen wir an ein sinnvolles BiGM, welches sich aus den Problemdaten errechnen lässt?
-BigM = 100
+BigM = milp_formulation.bigM(Q,beta,lb,ub)
+print(BigM)
 
 #result_nlp = nonlinear_formulation.solve_nonlinear(Q, beta, lb, ub)
 #print(result_nlp)
