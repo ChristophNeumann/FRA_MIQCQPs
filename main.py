@@ -16,11 +16,8 @@ ub = np.array([2, 2])
 
 # TODO: Add general By<=b constraints
 # Needed for the MILP formulation
-# TODO: Wie kommen wir an ein sinnvolles BiGM, welches sich aus den Problemdaten errechnen lässt?
-BigM = milp_formulation.bigM(Q,beta,lb,ub)
-print(BigM)
 
 #result_nlp = nonlinear_formulation.solve_nonlinear(Q, beta, lb, ub)
 #print(result_nlp)
-result_milp = milp_formulation.solve_milp(Q, beta, lb, ub, BigM)
+result_milp = milp_formulation.solve_milp(Q, beta, lb, ub)
 print(result_milp)
