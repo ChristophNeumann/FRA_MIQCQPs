@@ -2,3 +2,4 @@
 *
 #except Python files
 !*.py
+!/testbed/
