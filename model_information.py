@@ -4,6 +4,7 @@ from math_functions import *
 from pyomo.core.base.symbolic import differentiate
 from pyomo.opt import SolverStatus, TerminationCondition
 from pyomo.environ import *
+import numbers
 
 int_type = ['Integers', 'PositiveIntegers', 'NonPositiveIntegers',
             'NegativeIntegers', 'NonNegativeIntegers', 'Boolean', 'Binary']
@@ -15,6 +16,18 @@ def bool_vec_is_int(m):
     isInt = np.array([str(v.domain) in int_type for v in variables])
     return isInt
 
+def get_bounds(var_list):
+
+    lb = np.zeros(len(var_list))
+    ub = np.zeros(len(var_list))
+    for i,var in enumerate(var_list):
+        lb[i] = var.bounds[0]
+        ub[i] = var.bounds[1]
+    return lb, ub
+
+def check_sense_on_minimize(m):
+    return m.obj.sense == 1
+
 def enlargement_param(coeff, is_int):
     if any(coeff[np.logical_not(is_int)]) | any(coeff[is_int] - np.floor(coeff[is_int])):
         g = 0
@@ -23,17 +36,21 @@ def enlargement_param(coeff, is_int):
     return g
 
 
-def get_coeff(constr, model_vars):
+def get_coeff(expression, model_vars):
     """Returns the vector of coefficients coeff of a linear pyomo constraint constr.
     Note that coeff[i] = 0 holds, if the variable does not appear in the constraint"""
 
     # assert(constr.body.polynomial_degree()==1)
     names_model_vars = [v.name for v in model_vars]  # all variablenames from the model
     coeff = np.zeros(len(model_vars))
-    repn = generate_canonical_repn(constr.body)
+    if type(expression) == pyomo.core.base.constraint.SimpleConstraint:
+        expression = expression.body
+    repn = generate_canonical_repn(expression)
     for i, coefficient in enumerate(repn.linear or []):
         coeff[names_model_vars.index(repn.variables[i].name)] = coefficient
     return coeff
+
+
 
 
 def is_leq_constr(constr):
@@ -83,23 +100,12 @@ def model_status(result_solver):
 
     return result
 
-def g_max_lin(m):
+def get_linear_constraints(m):
     linear_constrs = []
     for constr in m.component_objects(Constraint):
         if constr.body.polynomial_degree() in [0, 1]:
             linear_constrs.append(constr)
-    # Note that equality constraints are always fulfilled, as they are assumed
-    # to be linear and to only contain continuous variables and are not changed when rounding.
-    if linear_constrs:
-        if len(linear_constrs) >= 2:
-            g_vals = np.zeros(len(linear_constrs))
-            for idx, constr in enumerate(linear_constrs):
-                g_vals[idx] = constr_value(constr)
-            return max(g_vals)
-        else:
-            return constr_value(linear_constrs[0])
-    else:
-        return 0
+    return linear_constrs
 
 
 def g_max(m):
@@ -157,5 +163,35 @@ def get_int_vars(m):
     int_vars =[v for v in model_vars if (str(v.domain) in int_type)]
     return int_vars
 
-def check_sense_on_minimize(model):
-    return model.obj.sense == 1
+def get_linear_constrs(m):
+    linear_constrs = []
+    for constr in m.component_objects(Constraint, active=True):
+        if constr.body.polynomial_degree() in [0, 1]:
+            linear_constrs.append(constr)
+    return linear_constrs
+
+def get_nonlinear_constrs(m):
+    nonlinear_constrs = []
+    for constr in m.component_objects(Constraint, active=True):
+        if not constr.body.polynomial_degree() in [0, 1]:
+            nonlinear_constrs.append(constr)
+    return nonlinear_constrs
+
+def is_zero_vector(nablaG):
+    '''With this function, we check if nablaG contains only zeros. Note that we can't just query
+    any(nablaG), because we might have an expression exrp=x as entry
+    with variable x=0 which will then return True'''
+
+    result = True
+    for i in range(len(nablaG)):
+        if not((isinstance(nablaG[i], numbers.Number)) and (nablaG[i] == 0)):
+            result = False
+            return result
+    return result
+
+def objective_is_linear(model):
+    if (model.obj.expr.polynomial_degree() in [0, 1]):
+        result = True
+    else:
+        result = False
+    return result

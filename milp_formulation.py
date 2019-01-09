@@ -1,7 +1,79 @@
 from pyomo.environ import *
 import numpy as np
+from pyomo.repn import generate_canonical_repn
+from model_information import *
+import numbers
+#from model_manipulation import *
+
+def milp_for_L(nablaG, y):
+
+#    print("Computing bigM values")
+    M_u, M_v = bigMNabla(nablaG, y) #Compute bigM values
+
+#    print("Computation of bigM done. Maximum value is:  " + str(max(max(M_u),max(M_v))))
+    model = ConcreteModel()
+    model.m = len(nablaG) #We differentiate wrt all integer variables
+    model.J = Set(initialize = range(model.m))
+
+    def bounds_y(model,j):
+        lb,ub = get_bounds(y)
+        return lb[j],ub[j]
+
+    def bounds_u(model,j):
+        return 0, M_u[j]
+
+    def bounds_v(model,j):
+        return 0, M_v[j]
+
+    model.y = Var(model.J, domain= Reals, bounds = bounds_y)
+
+    model.u = Var(model.J, domain=Reals, bounds = bounds_u)
+    model.v = Var(model.J, domain=Reals, bounds = bounds_v)
+    model.b = Var(model.J, domain=Binary)
+
+    model.obj = Objective(
+        expr=sum(model.u[j] + model.v[j] for j in model.J),
+        sense=maximize
+    )
+
+    def lgs_constr(model, j):
+
+        # nablaG is written with old variables and can potentially be a number.
+        if isinstance(nablaG[j],numbers.Number):
+            constr = float(nablaG[j]) == model.u[j] - model.v[j]
+        else:
+            coeff = get_coeff(nablaG[j], y)
+            constr = sum( [coeff[i]*model.y[i] for i in range(model.m)]) == model.u[j] - model.v[j] #Has to be done componentwise, returns numeric value otherwise
+        return constr
+
+    def compl_constr_bigm1(model, j):
+        return model.u[j] <= M_u[j]*model.b[j]
+
+    def compl_constr_bigm2(model, j):
+        return model.v[j] <= M_v[j]*(1-model.b[j])
+
+    model.lgs = Constraint(model.J, rule=lgs_constr)
+    model.compl_1 = Constraint(model.J, rule=compl_constr_bigm1)
+    model.compl_2 = Constraint(model.J, rule=compl_constr_bigm2)
+    # Write the LP file for debugging purposes
+#    model.write('model.lp')
+    # Solver
+    # possible choices: 'ipopt' (NLP), 'glpk' (MIP), 'gurobi'
+    opt = SolverFactory('gurobi')
+    # Solve statement
+    result_obj = opt.solve(model, tee=False)
+
+    L_const = value(model.obj)
+#    print("Found Lipschitz constant is:   " + str(L_const))
+
+#    model.pprint()
+
+    return L_const
+
+
 
 def solve_milp(Q, beta, lb, ub):
+
     # TODO: Implement additional polyhedral constraints of the form B*y=b
     # Model declaration
     model = ConcreteModel()
@@ -59,6 +131,31 @@ def solve_milp(Q, beta, lb, ub):
     model.pprint()
 
     return result_obj
+
+def bigMNabla(nablaG, y):
+
+    p = len(nablaG)
+    M_u = np.zeros(p)
+    M_v = np.zeros(p)
+    lb, ub = get_bounds(y)
+
+    for i in range(0,p):
+        if isinstance(nablaG[i],numbers.Number):
+            M_u[i] = nablaG[i]
+            M_v[i] = nablaG[i]
+        else:
+            nablaG_i = get_coeff(nablaG[i],y)
+            for j, coefficient in enumerate(nablaG_i):
+                if coefficient >0:
+                    M_u[i] += coefficient*ub[j]
+                    M_v[i] += coefficient*lb[j]
+                if coefficient< 0:
+                    M_u[i] += coefficient*lb[j]
+                    M_v[i] += coefficient*ub[j]
+        M_u[i] = max(M_u[i], 0)
+        M_v[i] = max(-M_v[i], 0)
+
+    return M_u, M_v
 
 
 def bigM(Q,beta,lb,ub):
