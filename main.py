@@ -1,7 +1,7 @@
 import numpy as np
 
 from FRA_SOR import *
-from testbed.ringpack_30_1 import *
+from testbed.exPaper import *
 
 
 result_SOR = SOR(m)

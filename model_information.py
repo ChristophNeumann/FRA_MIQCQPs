@@ -142,7 +142,14 @@ def gradient_symb(constr, variables):
 
 
 def var_value(model_vars):
-    return np.array([value(v) for v in model_vars])
+    result = []
+    if type(model_vars) == pyomo.core.base.var.IndexedVar:
+        for i in list(model_vars.keys()):
+            result.append(value(model_vars[i]))
+        result = np.array(result)
+    else:
+        result = np.array([value(v) for v in model_vars])
+    return result
 
 
 def get_model_vars(m):
@@ -194,4 +201,20 @@ def objective_is_linear(model):
         result = True
     else:
         result = False
+    return result
+
+def filter_only_integer_constrains(linearConstrList):
+    result = []
+    for constr in linearConstrList:
+        if contains_only_integer_vars(constr):
+            result.append((constr))
+    return result
+
+def contains_only_integer_vars(constr):
+    result = True
+    my_vars = get_vars_from_constr(constr)
+    for v in my_vars:
+        if str(v.domain) not in int_type:
+            result = False
+            break
     return result

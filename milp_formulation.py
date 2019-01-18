@@ -5,7 +5,7 @@ from model_information import *
 import numbers
 #from model_manipulation import *
 
-def milp_for_L(nablaG, y):
+def milp_for_L(nablaG, D_y, y):
 
 #    print("Computing bigM values")
     M_u, M_v = bigMNabla(nablaG, y) #Compute bigM values
@@ -14,6 +14,7 @@ def milp_for_L(nablaG, y):
     model = ConcreteModel()
     model.m = len(nablaG) #We differentiate wrt all integer variables
     model.J = Set(initialize = range(model.m))
+    model.I = Set(initialize = range(len(D_y)))
 
     def bounds_y(model,j):
         lb,ub = get_bounds(y)
@@ -36,6 +37,17 @@ def milp_for_L(nablaG, y):
         sense=maximize
     )
 
+
+    def migrate_linear_constrs(model, i):
+        constr = D_y[i]
+        coeff = get_coeff(constr,y)
+        if is_leq_constr(constr):
+            constr_add = sum( [coeff[i]*model.y[i] for i in range(len(coeff))] ) <= constr.upper()
+        else:
+            constr_add = sum( [coeff[i]*model.y[i] for i in range(len(coeff))] ) >= constr.lower()
+        return constr_add
+
+
     def lgs_constr(model, j):
 
         # nablaG is written with old variables and can potentially be a number.
@@ -55,6 +67,7 @@ def milp_for_L(nablaG, y):
     model.lgs = Constraint(model.J, rule=lgs_constr)
     model.compl_1 = Constraint(model.J, rule=compl_constr_bigm1)
     model.compl_2 = Constraint(model.J, rule=compl_constr_bigm2)
+    model.D_y = Constraint(model.I, rule = migrate_linear_constrs)
     # Write the LP file for debugging purposes
 #    model.write('model.lp')
     # Solver
@@ -64,6 +77,8 @@ def milp_for_L(nablaG, y):
     result_obj = opt.solve(model, tee=False)
 
     L_const = value(model.obj)
+    print(str(L_const))
+    print(str(var_value(model.y)))
 #    print("Found Lipschitz constant is:   " + str(L_const))
 
 #    model.pprint()

@@ -42,12 +42,14 @@ def enlarged_IPS(m):
 
 def compute_lipschitz(constr, model):
     y = get_int_vars(model)
+    D = get_linear_constraints(model)
+    D_y = filter_only_integer_constrains(D)
     nablaG = gradient_symb(constr, y)
     if is_zero_vector(nablaG):
         L_infty = 0
         print("Constraint " + constr.name + " has no integral variables")
     else:
-        L_infty = milp_for_L(nablaG, y)
+        L_infty = milp_for_L(nablaG, D_y, y)
     return L_infty
 
 def box_constrs_to_expr(m, in_vars):
