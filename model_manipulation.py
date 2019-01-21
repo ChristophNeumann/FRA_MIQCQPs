@@ -16,6 +16,9 @@ def enlarged_IPS(m):
     model_vars = get_model_vars(eips)
     is_int = bool_vec_is_int(eips)
 
+    #Initially, we enlarge the box constraints. These are then used for the computation of the Lipschitz constants.
+    enlarge_box_constrs(model_vars)
+
     ## Compute inner approximation wrt. nonlinear constraints. Needs to be done BEFORE the linear constraints,
     ## due to the reason that extract D_y from EIPS! Note that we can't use m, because constr is taken from eips.
     for constr in nonlinear_constrs:
@@ -39,7 +42,7 @@ def enlarged_IPS(m):
             else:
                 constr.set_value(-constr.body <= floor_g(-constr.lower(),g) - 1/2*beta + delta*g)
 
-    cont_relax_model(model_vars) # Integral variables become continuous and their bounds get enlarged
+    cont_relax_model(model_vars) # Integral variables become continuous
     return eips
 
 def compute_lipschitz(constr, model):
@@ -62,7 +65,7 @@ def box_constrs_to_expr(m, in_vars):
             m.add_component(var.name + "_ub", Constraint(expr = var <= var.bounds[1]))
 
 
-def enlarge_box_constraints(var):
+def enlarge_box_constraint(var):
     if (var.bounds is not None) and (var.bounds[0] is not None):
         var.setlb(math.ceil(var.bounds[0]) - delta / 2)
     if (var.bounds is not None) and (var.bounds[1] is not None):
@@ -72,8 +75,13 @@ def enlarge_box_constraints(var):
 def cont_relax_model(model_vars):
     for var in model_vars:
         if str(var.domain) in int_type:
-            enlarge_box_constraints(var)
             var.domain = Reals
+
+def enlarge_box_constrs(model_vars):
+    for var in model_vars:
+        if str(var.domain) in int_type:
+            enlarge_box_constraint(var)
+
 
 
 def deactivate_nonlinear_constrs(m):
