@@ -10,17 +10,23 @@ def add_objective_bound(m):
 
 
 def enlarged_IPS(m):
+    ''' Computes the enlarged inner parallel set of a MIQCQP m.
+    There are three enlargement steps
+    1. Compute the EIPS of box constraints
+    2. Compute the EIPS of nonlinear constraints
+    3. Compute the EIPS of polyhedral constraints that are NO box constraints
+    This order is crucial, due to the reason that we compute the Lipschitz constants on tilde D (see paper) that
+    incorporate enlarged box constraints, but the original linear constraints!
+    '''
+
     eips = m.clone()
     linear_constrs = get_linear_constraints(eips)
     nonlinear_constrs = get_nonlinear_constrs(eips)
     model_vars = get_model_vars(eips)
     is_int = bool_vec_is_int(eips)
+    EIPS_box_constrs(model_vars)     #Step 1
 
-    #Initially, we enlarge the box constraints. These are then used for the computation of the Lipschitz constants.
-    enlarge_box_constrs(model_vars)
-
-    ## Compute inner approximation wrt. nonlinear constraints. Needs to be done BEFORE the linear constraints,
-    ## due to the reason that extract D_y from EIPS! Note that we can't use m, because constr is taken from eips.
+    ## Step 2: nonlinear constrs. (Needs to be done BEFORE the linear constraints (see above))
     for constr in nonlinear_constrs:
         if not constr.equality:
             print(constr)
@@ -31,7 +37,7 @@ def enlarged_IPS(m):
                 constr.set_value(-constr.body <= -constr.lower() - 1/2*L_infty)
 
 
-    ## Compute EIPS of linear constraints first
+    ## Step 3: EIPS of linear constrs
     for constr in linear_constrs:
         coeff = get_coeff(constr, model_vars)
         beta = np.linalg.norm(coeff[is_int],ord=1)
@@ -77,7 +83,7 @@ def cont_relax_model(model_vars):
         if str(var.domain) in int_type:
             var.domain = Reals
 
-def enlarge_box_constrs(model_vars):
+def EIPS_box_constrs(model_vars):
     for var in model_vars:
         if str(var.domain) in int_type:
             enlarge_box_constraint(var)
