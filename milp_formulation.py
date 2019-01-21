@@ -26,11 +26,11 @@ def milp_for_L(nablaG, D_y, y):
     def bounds_v(model,j):
         return 0, M_v[j]
 
-    model.y = Var(model.J, domain= Reals, bounds = bounds_y)
+    model.y = Var(model.J, domain= Reals, initialize = 0, bounds = bounds_y)
 
-    model.u = Var(model.J, domain=Reals, bounds = bounds_u)
-    model.v = Var(model.J, domain=Reals, bounds = bounds_v)
-    model.b = Var(model.J, domain=Binary)
+    model.u = Var(model.J, domain=Reals, initialize = 0, bounds = bounds_u)
+    model.v = Var(model.J, domain=Reals, initialize = 0, bounds = bounds_v)
+    model.b = Var(model.J, initialize = 0, domain=Binary)
 
     model.obj = Objective(
         expr=sum(model.u[j] + model.v[j] for j in model.J),
