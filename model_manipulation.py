@@ -16,6 +16,18 @@ def enlarged_IPS(m):
     model_vars = get_model_vars(eips)
     is_int = bool_vec_is_int(eips)
 
+    ## Compute inner approximation wrt. nonlinear constraints. Needs to be done BEFORE the linear constraints,
+    ## due to the reason that extract D_y from EIPS! Note that we can't use m, because constr is taken from eips.
+    for constr in nonlinear_constrs:
+        if not constr.equality:
+            print(constr)
+            L_infty = compute_lipschitz(constr,eips) #Todo: Enlargmenet
+            if is_leq_constr(constr):
+                constr.set_value(constr.body <= constr.upper() - 1/2*L_infty)
+            else:
+                constr.set_value(-constr.body <= -constr.lower() - 1/2*L_infty)
+
+
     ## Compute EIPS of linear constraints first
     for constr in linear_constrs:
         coeff = get_coeff(constr, model_vars)
@@ -26,16 +38,6 @@ def enlarged_IPS(m):
                 constr.set_value(constr.body <= floor_g(constr.upper(),g)-1/2*beta + delta*g)
             else:
                 constr.set_value(-constr.body <= floor_g(-constr.lower(),g) - 1/2*beta + delta*g)
-
-    ## Compute inner approximation wrt. nonlinear constraints
-    for constr in nonlinear_constrs:
-        if not constr.equality:
-            print(constr)
-            L_infty = compute_lipschitz(constr,eips) #Todo: Enlargmenet
-            if is_leq_constr(constr):
-                constr.set_value(constr.body <= constr.upper() - 1/2*L_infty)
-            else:
-                constr.set_value(-constr.body <= -constr.lower() - 1/2*L_infty)
 
     cont_relax_model(model_vars) # Integral variables become continuous and their bounds get enlarged
     return eips
@@ -49,7 +51,7 @@ def compute_lipschitz(constr, model):
         L_infty = 0
         print("Constraint " + constr.name + " has no integral variables")
     else:
-        L_infty = milp_for_L(nablaG, D_y, y)
+        L_infty = milp_for_L(nablaG, D_y, y) # Main work is done here!
     return L_infty
 
 def box_constrs_to_expr(m, in_vars):

@@ -77,8 +77,8 @@ def milp_for_L(nablaG, D_y, y):
     result_obj = opt.solve(model, tee=False)
 
     L_const = value(model.obj)
-    print(str(L_const))
-    print(str(var_value(model.y)))
+#    print(str(L_const))
+#    print(str(var_value(model.y)))
 #    print("Found Lipschitz constant is:   " + str(L_const))
 
 #    model.pprint()
