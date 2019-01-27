@@ -16,8 +16,8 @@ def bool_vec_is_int(m):
     isInt = np.array([str(v.domain) in int_type for v in variables])
     return isInt
 
-def get_bounds(var_list):
 
+def get_bounds(var_list):
     lb = np.zeros(len(var_list))
     ub = np.zeros(len(var_list))
     for i,var in enumerate(var_list):
@@ -25,8 +25,10 @@ def get_bounds(var_list):
         ub[i] = var.bounds[1]
     return lb, ub
 
+
 def check_sense_on_minimize(m):
     return m.obj.sense == 1
+
 
 def enlargement_param(coeff, is_int):
     if any(coeff[np.logical_not(is_int)]) | any(coeff[is_int] - np.floor(coeff[is_int])):
@@ -49,8 +51,6 @@ def get_coeff(expression, model_vars):
     for i, coefficient in enumerate(repn.linear or []):
         coeff[names_model_vars.index(repn.variables[i].name)] = coefficient
     return coeff
-
-
 
 
 def is_leq_constr(constr):
@@ -87,6 +87,7 @@ def contains_eq_constrs_on_int_vars(m):
                     break
     return result
 
+
 def model_status(result_solver):
     if (result_solver.solver.status == SolverStatus.ok) and \
             (result_solver.solver.termination_condition == TerminationCondition.optimal):
@@ -99,6 +100,7 @@ def model_status(result_solver):
         result = result_solver.solver.termination_message
 
     return result
+
 
 def get_linear_constraints(m):
     linear_constrs = []
@@ -134,6 +136,7 @@ def gradient(constr, variables):
         grad_num = -grad_num
     return grad_num
 
+
 def gradient_symb(constr, variables):
     grad_num = np.array([partial for partial in differentiate(constr.body, wrt_list=variables)])
     if (not (is_leq_constr(constr))):
@@ -164,11 +167,13 @@ def get_model_vars(m):
             variable_list.append(v)
     return variable_list
 
+
 def get_int_vars(m):
     """Returns a list of all integer variables from the model"""
     model_vars = get_model_vars(m)
     int_vars =[v for v in model_vars if (str(v.domain) in int_type)]
     return int_vars
+
 
 def get_linear_constrs(m):
     linear_constrs = []
@@ -177,12 +182,14 @@ def get_linear_constrs(m):
             linear_constrs.append(constr)
     return linear_constrs
 
+
 def get_nonlinear_constrs(m):
     nonlinear_constrs = []
     for constr in m.component_objects(Constraint, active=True):
         if not constr.body.polynomial_degree() in [0, 1]:
             nonlinear_constrs.append(constr)
     return nonlinear_constrs
+
 
 def is_zero_vector(nablaG):
     '''With this function, we check if nablaG contains only zeros. Note that we can't just query
@@ -196,6 +203,7 @@ def is_zero_vector(nablaG):
             return result
     return result
 
+
 def objective_is_linear(model):
     if (model.obj.expr.polynomial_degree() in [0, 1]):
         result = True
@@ -203,12 +211,14 @@ def objective_is_linear(model):
         result = False
     return result
 
+
 def filter_only_integer_constrains(linearConstrList):
     result = []
     for constr in linearConstrList:
         if contains_only_integer_vars(constr):
             result.append((constr))
     return result
+
 
 def contains_only_integer_vars(constr):
     result = True
