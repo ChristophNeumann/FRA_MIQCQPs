@@ -23,11 +23,9 @@ for model_name in all_models:
     model = aa.load_pyomo_model(model_name)
     vars = get_int_vars(model)
     nonlinear_constraints = get_nonlinear_constrs(model)
-    num_nonlinear_constraints = len(nonlinear_constraints)
     model_is_ynonlinear = check_ynonlinearity(nonlinear_constraints, vars)
     if model_is_ynonlinear:
         models_with_Qy_not_zero.append(model_name)
-    print(models_with_Qy_not_zero)
     print('Up to now, %d out of %d models contain nonlinear constraints in y.' % (len(models_with_Qy_not_zero), it))
     it += 1
 F = open('Models_With_Nonlinear_Y.txt', 'w')
