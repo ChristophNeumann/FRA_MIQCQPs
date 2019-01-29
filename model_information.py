@@ -228,3 +228,10 @@ def contains_only_integer_vars(constr):
             result = False
             break
     return result
+
+
+def contains_some_integer_vars(constr):
+    my_vars = get_vars_from_constr(constr)
+    for v in my_vars:
+        if str(v.domain) in int_type:
+            return True

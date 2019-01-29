@@ -16,6 +16,8 @@ def check_ynonlinearity(nonlinear_constraints, vars):
 models_with_Qy_not_zero = []
 all_models = [file.split('.')[0] for file in os.listdir("testbed") if '.py' in file]
 it = 1
+F = open('Models_With_Nonlinear_Y.txt', 'w')
+F.close()
 
 for model_name in all_models:
     print(model_name)
@@ -23,7 +25,9 @@ for model_name in all_models:
     model = aa.load_pyomo_model(model_name)
     vars = get_int_vars(model)
     nonlinear_constraints = get_nonlinear_constrs(model)
-    model_is_ynonlinear = check_ynonlinearity(nonlinear_constraints, vars)
+    nonlinear_constraints_with_integer_vars = [constr for constr in nonlinear_constraints
+                                               if contains_some_integer_vars(constr)]
+    model_is_ynonlinear = check_ynonlinearity(nonlinear_constraints_with_integer_vars, vars)
     if model_is_ynonlinear:
         models_with_Qy_not_zero.append(model_name)
         F = open('Models_With_Nonlinear_Y.txt', 'a')
