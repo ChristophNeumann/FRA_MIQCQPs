@@ -75,6 +75,11 @@ def get_vars_from_constr(constr):
     return list(identify_variables(constr.body))
 
 
+def get_vars_from_grad_el(el):
+    """Returns all variables appearing in a constraint constr"""
+    return list(identify_variables(el))
+
+
 def contains_eq_constrs_on_int_vars(m):
     """Checks if a model m contains some equality constraint ax+by=c with y Integer"""
     result = False
@@ -236,3 +241,12 @@ def contains_some_integer_vars(constr):
     for v in my_vars:
         if str(v.domain) in int_type:
             return True
+    return False
+
+
+def contains_only_integer_vars_grad_el(el):
+    my_vars = get_vars_from_grad_el(el)
+    for v in my_vars:
+        if str(v.domain) not in int_type:
+            return False
+    return True
