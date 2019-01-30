@@ -2,6 +2,7 @@ import algorithm_analysis as aa
 import os
 import numbers
 from model_information import *
+import sys
 
 
 def check_ynonlinearity(nonlinear_constraints, vars):
@@ -13,6 +14,7 @@ def check_ynonlinearity(nonlinear_constraints, vars):
     return False
 
 
+sys.setrecursionlimit(5000)
 models_with_Qy_not_zero = []
 all_models = [file.split('.')[0] for file in os.listdir("testbed") if '.py' in file]
 it = 1

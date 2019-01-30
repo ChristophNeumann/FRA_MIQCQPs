@@ -113,7 +113,6 @@ def get_linear_constraints(m):
 def g_max(m):
     """Returns the maximum value of all constraint functions of a pyomo model m for a given point x,
     implicitly rearranging all constraints to g_i(x) <= 0 and computing max(g_i(x))"""
-
     nonlinear_constrs = []
     for constr in m.component_objects(Constraint):
         if not (constr.body.polynomial_degree() in [0, 1]):
@@ -132,14 +131,14 @@ def g_max(m):
 
 def gradient(constr, variables):
     grad_num = np.array([value(partial) for partial in differentiate(constr.body, wrt_list=variables)])
-    if (not (is_leq_constr(constr))):
+    if not is_leq_constr(constr):
         grad_num = -grad_num
     return grad_num
 
 
 def gradient_symb(constr, variables):
     grad_num = np.array([partial for partial in differentiate(constr.body, wrt_list=variables)])
-    if (not (is_leq_constr(constr))):
+    if not is_leq_constr(constr):
         grad_num = -grad_num
     return grad_num
 
@@ -171,7 +170,7 @@ def get_model_vars(m):
 def get_int_vars(m):
     """Returns a list of all integer variables from the model"""
     model_vars = get_model_vars(m)
-    int_vars =[v for v in model_vars if (str(v.domain) in int_type)]
+    int_vars = [v for v in model_vars if (str(v.domain) in int_type)]
     return int_vars
 
 
@@ -192,9 +191,11 @@ def get_nonlinear_constrs(m):
 
 
 def is_zero_vector(nablaG):
-    '''With this function, we check if nablaG contains only zeros. Note that we can't just query
+    """
+    With this function, we check if nablaG contains only zeros. Note that we can't just query
     any(nablaG), because we might have an expression exrp=x as entry
-    with variable x=0 which will then return True'''
+    with variable x=0 which will then return True
+    """
 
     result = True
     for i in range(len(nablaG)):
@@ -205,7 +206,7 @@ def is_zero_vector(nablaG):
 
 
 def objective_is_linear(model):
-    if (model.obj.expr.polynomial_degree() in [0, 1]):
+    if model.obj.expr.polynomial_degree() in [0, 1]:
         result = True
     else:
         result = False
@@ -216,7 +217,7 @@ def filter_only_integer_constrains(linearConstrList):
     result = []
     for constr in linearConstrList:
         if contains_only_integer_vars(constr):
-            result.append((constr))
+            result.append(constr)
     return result
 
 
