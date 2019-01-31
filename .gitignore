@@ -1,5 +1,1 @@
-#ignore all kind of files
-*
-#except Python files
-!*.py
-!testbed
+
