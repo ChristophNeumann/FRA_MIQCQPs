@@ -1,6 +1,7 @@
 import os
 import algorithm_analysis as aa
 from model_information import *
+import sys
 
 
 def check_existence_xy(nonlinear_constraints, vars):
@@ -11,6 +12,8 @@ def check_existence_xy(nonlinear_constraints, vars):
                 return True
     return False
 
+
+sys.setrecursionlimit(5000)
 models_with_xy_expr = []
 all_models = [file.split('.')[0] for file in os.listdir("testbed/y_nonlinear") if '.py' in file]
 
