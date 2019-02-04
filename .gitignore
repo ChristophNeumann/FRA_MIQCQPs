@@ -3,4 +3,8 @@
 #except Python files
 !*.py
 !/testbed/
+!/testbed/*.txt
+!/results/
+!/results/Evaluation_Paper.ipynb
+!/results/intermediate_results.pkl
 

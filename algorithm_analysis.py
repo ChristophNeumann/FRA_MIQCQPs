@@ -4,6 +4,8 @@ from model_information import *
 sys.path.append('testbed')  # For loading models as modules
 import os
 import pandas as pd
+import pickle
+from FRA_SOR import *
 
 def load_pyomo_model(problem_name):
     testinstance = importlib.import_module(problem_name)
@@ -12,11 +14,11 @@ def load_pyomo_model(problem_name):
 def read_test_instances(filename):
     '''Read test instance Data '''
     dir = os.path.dirname(__file__)
-    problem_data = os.path.join(dir, 'problem_information', filename + '.txt')
+    problem_data = os.path.join(dir, 'testbed', filename + '.txt')
     f = open(problem_data, 'r')
     test_problems = f.read().splitlines()
     f.close()
-    return test_problems
+    return np.array(test_problems)
 
 def get_model_data_for_print(m):
     p = len(list(m.component_objects(Constraint)))
@@ -27,6 +29,8 @@ def get_model_data_for_print(m):
 
 def get_data_matrix(test_problems):
     '''Creates a pandas data matrix for test problems, containing
+        - #variables (int variables)
+        - #constraints (nonlinear constraints)
         :param test_problems: list of strings that correspond to python files containing pyomo models
     '''
     data_matrix = []
@@ -40,16 +44,8 @@ def get_data_matrix(test_problems):
     pd_data_matrix.index = names
     return pd_data_matrix
 
+def run_SOR(test_problems):
 
-def run_FCPA(test_problems, mode = 'INNER', epsilon = 10 ** -6, max_iter = 1000, only_epi = False):
-
-    """
-       Parameter for the algorithm
-       :param epsilon Feasibility tolerance of the FCPA
-       :param Iteration Limit for FCPA
-       :param: only_epi. Userspecific knowledge that a problem is an epigraph reformulation where
-                the only source of nonlinearity stems from the reformulation
-       """
     result_matrix = []
 
     for idx, name in enumerate(test_problems):
@@ -57,32 +53,17 @@ def run_FCPA(test_problems, mode = 'INNER', epsilon = 10 ** -6, max_iter = 1000,
         print('Testing problem ', name)
         original_model = load_pyomo_model(name)
         current_model = original_model.clone()
-        current_model, red_successful, is_epi = preprocess_model(current_model)
+        result = SOR(current_model)
+        save_obj(result, name + '_raw') # we write each result in a pickle file
+        datalist = get_model_data_for_print(current_model)
+        result_matrix.append([datalist[0],datalist[1],result['time_ips'],result['time'],result['obj'],result['g']])
+        intermediate_dataframe = pd.DataFrame(np.array(result_matrix), columns=['vars','constrs','time L', 'time SOR', 'obj', 'constr_value'])
+        intermediate_dataframe.index = np.array(test_problems)[:idx+1]
+        save_obj(intermediate_dataframe,'intermediate_results')
+        del original_model
+        del current_model
+        del result
 
-        if is_epi and (number_nonlinear_constrs(current_model) <=1):
-            only_epi = True
-
-        if only_epi:
-            print('Only Epi')
-
-        if red_successful:
-            result = FCPA(current_model, mode, epsilon, max_iter, only_epi)
-            save_obj(result, name + '_raw') # we write each result in a pickle file
-            # postprocessing in case of epigraph reformulation. Already internally taken care of in the case of only epi.
-            if is_epi and not only_epi:
-                print('reducing objective value')
-                result['obj'] += constr_value(result['model'].con_epi)
-                print('minimum objective of iterates value would be: ' + str(min(result['obj_vals'])))
-            print('Objective value: ', result['obj'])
-            print('Iterations: ', result['iterations'])
-            print('Run time: ', result['runtime'])
-            result_matrix.append([result['iterations'],result['runtime'],result['obj']])
-
-            del original_model
-            del current_model
-            del result
-
-    result_matrix = pd.DataFrame(np.array(result_matrix), columns = ['iter','time','obj'])
-    result_matrix.index = test_problems
-    result_matrix['iter'] = result_matrix['iter'].astype('int')
-    return result_matrix
+def save_obj(obj, name ):
+    with open('results/'+ name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)

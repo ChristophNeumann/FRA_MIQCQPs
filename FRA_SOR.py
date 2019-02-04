@@ -8,7 +8,7 @@ def SOR(m, nonlinear_solver = 'ipopt'):
 
     vars_original = get_model_vars(m)
     is_int = bool_vec_is_int(m)
-    eips = enlarged_IPS(m)
+    eips, time_IPS = enlarged_IPS(m)
     opt = SolverFactory(nonlinear_solver)
     solver_message = opt.solve(eips, tee=False)
     runtime = solver_message.solver.time
@@ -20,5 +20,9 @@ def SOR(m, nonlinear_solver = 'ipopt'):
         print(solver_message)
         x = np.full(len(vars_original),np.inf)
         obj_val = np.inf
-    return {'x' : x, 'obj' : obj_val, 'time' : runtime}
+
+    if number_nonlinear_constrs(m) == 1:
+        g_value = constr_value(get_nonlinear_constrs(m)[0])
+    else: g_value = -np.inf
+    return {'x' : x, 'obj' : obj_val, 'time' : runtime, 'time_ips':time_IPS, 'g':g_value}
 

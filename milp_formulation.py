@@ -75,15 +75,13 @@ def milp_for_L(nablaG, D_y, y):
     opt = SolverFactory('gurobi')
     # Solve statement
     result_obj = opt.solve(model, tee=False)
-
+    runtime = result_obj.solver.time
     L_const = value(model.obj)
-#    print(str(L_const))
-    print(str(var_value(model.y)))
     print("Found Lipschitz constant is:   " + str(L_const))
 
 #    model.pprint()
 
-    return L_const
+    return L_const, runtime
 
 
 

@@ -19,6 +19,8 @@ def enlarged_IPS(m):
     incorporate enlarged box constraints, but the original linear constraints!
     '''
 
+    time_ips = 0
+
     eips = m.clone()
     linear_constrs = get_linear_constraints(eips)
     nonlinear_constrs = get_nonlinear_constrs(eips)
@@ -30,7 +32,8 @@ def enlarged_IPS(m):
     for constr in nonlinear_constrs:
         if not constr.equality:
             print(constr)
-            L_infty = compute_lipschitz(constr,eips) #Todo: Enlargmenet
+            L_infty, runtime_i = compute_lipschitz(constr,eips) #Todo: Enlargmenet
+            time_ips += runtime_i
             if is_leq_constr(constr):
                 constr.set_value(constr.body <= constr.upper() - 1/2*L_infty)
             else:
@@ -49,7 +52,7 @@ def enlarged_IPS(m):
                 constr.set_value(-constr.body <= floor_g(-constr.lower(),g) - 1/2*beta + delta*g)
 
     cont_relax_model(model_vars) # Integral variables become continuous
-    return eips
+    return eips, time_ips
 
 def compute_lipschitz(constr, model):
     y = get_int_vars(model)
@@ -58,10 +61,11 @@ def compute_lipschitz(constr, model):
     nablaG = gradient_symb(constr, y)
     if is_zero_vector(nablaG):
         L_infty = 0
+        runtime = 0
         print("Constraint " + constr.name + " has no integral variables")
     else:
-        L_infty = milp_for_L(nablaG, D_y, y) # Main work is done here!
-    return L_infty
+        L_infty, runtime = milp_for_L(nablaG, D_y, y) # Main work is done here!
+    return L_infty, runtime
 
 def box_constrs_to_expr(m, in_vars):
     for var in in_vars:
