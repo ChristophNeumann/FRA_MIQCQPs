@@ -250,3 +250,10 @@ def contains_only_integer_vars_grad_el(el):
         if str(v.domain) not in int_type:
             return False
     return True
+
+def number_nonlinear_constrs(m):
+    result = 0
+    for constr in m.component_objects(Constraint, active=True):
+        if not (constr.body.polynomial_degree() in [0, 1]):
+            result = result + 1
+    return result
