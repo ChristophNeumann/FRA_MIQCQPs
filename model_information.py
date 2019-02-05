@@ -266,3 +266,32 @@ def number_nonlinear_constrs(m):
         if not (constr.body.polynomial_degree() in [0, 1]):
             result = result + 1
     return result
+
+def numbers_constrs(m):
+    y = get_int_vars(m)
+    n_constrs = 0
+    n_nl_constrs = 0
+    n_nl_lin_in_y_constrs = 0
+    n_nl_nl_in_y_constrs = 0
+    for constr in m.component_objects(Constraint, active=True):
+        n_constrs+=1
+        if not (constr.body.polynomial_degree() in [0, 1]):
+            n_nl_constrs +=1
+            nablaG = gradient_symb(constr,y)
+            if not is_zero_vector(nablaG):
+                n_nl_lin_in_y_constrs += 1
+                if not contains_only_numbers(nablaG):
+                    n_nl_nl_in_y_constrs += 1
+    result = (n_constrs, n_nl_constrs,n_nl_lin_in_y_constrs,n_nl_nl_in_y_constrs)
+    return result
+
+def get_number_of_binary_vars(m):
+
+    variables = get_model_vars(m)
+    isBinary = np.zeros(len(variables))
+    for i,v in enumerate(variables):
+        if (str(v.domain) == 'Binary') or (v.domain in int_type and v.bounds[0] == 0 and v.bounds[1] == 1):
+            isBinary[i] = 1
+    return int(sum(isBinary))
+
+

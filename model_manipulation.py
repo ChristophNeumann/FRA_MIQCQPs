@@ -8,7 +8,6 @@ delta = 1-10**-4 # Enlargement parameter
 def add_objective_bound(m):
     m.obj_con = Constraint(expr = m.obj.expr >= -ABS_BOUND)
 
-
 def enlarged_IPS(m):
     ''' Computes the enlarged inner parallel set of a MIQCQP m.
     There are three enlargement steps
@@ -20,7 +19,6 @@ def enlarged_IPS(m):
     '''
 
     time_ips = 0
-
     eips = m.clone()
     linear_constrs = get_linear_constraints(eips)
     nonlinear_constrs = get_nonlinear_constrs(eips)
@@ -37,7 +35,6 @@ def enlarged_IPS(m):
                 constr.set_value(constr.body <= constr.upper() - 1/2*L_infty)
             else:
                 constr.set_value(-constr.body <= -constr.lower() - 1/2*L_infty)
-
 
     ## Step 3: EIPS of linear constrs
     for constr in linear_constrs:

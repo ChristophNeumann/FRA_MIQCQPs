@@ -21,11 +21,13 @@ def read_test_instances(filename):
     return np.array(test_problems)
 
 def get_model_data_for_print(m):
-    p = len(list(m.component_objects(Constraint)))
-    p_nl = number_nonlinear_constrs(m)
+    p_quadrupel = numbers_constrs(m)
     is_int = bool_vec_is_int(m)
-    m = np.sum(is_int)
-    return [str(len(is_int)) + '(' + str(m)  + ')',str(p) + '(' + str(p_nl) + ')']
+    n_of_vars = len(is_int)
+    n_of_int_vars = np.sum(is_int)
+    n_of_bin_vars = get_number_of_binary_vars(m)
+
+    return [str((n_of_vars,n_of_int_vars,n_of_bin_vars)),str(p_quadrupel)]
 
 def get_data_matrix(test_problems):
     '''Creates a pandas data matrix for test problems, containing
