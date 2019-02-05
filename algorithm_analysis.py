@@ -54,7 +54,6 @@ def run_SOR(test_problems):
         original_model = load_pyomo_model(name)
         current_model = original_model.clone()
         result = SOR(current_model)
-        save_obj(result, name + '_raw') # we write each result in a pickle file
         datalist = get_model_data_for_print(current_model)
         result_matrix.append([datalist[0],datalist[1],result['time_ips'],result['time'],result['obj'],result['g']])
         intermediate_dataframe = pd.DataFrame(np.array(result_matrix), columns=['vars','constrs','time L', 'time SOR', 'obj', 'constr_value'])

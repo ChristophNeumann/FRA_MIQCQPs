@@ -218,9 +218,9 @@ def objective_is_linear(model):
     return result
 
 
-def filter_only_integer_constrains(linearConstrList):
+def filter_only_integer_constrains(linear_constr_list):
     result = []
-    for constr in linearConstrList:
+    for constr in linear_constr_list:
         if contains_only_integer_vars(constr):
             result.append(constr)
     return result
