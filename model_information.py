@@ -194,6 +194,15 @@ def get_nonlinear_constrs(m):
             nonlinear_constrs.append(constr)
     return nonlinear_constrs
 
+def contains_only_numbers(nablaG):
+    result = True
+    for i in range(len(nablaG)):
+        if not(isinstance(nablaG[i],numbers.Number)):
+            result = False
+            return result
+    return result
+
+
 
 def is_zero_vector(nablaG):
     """
