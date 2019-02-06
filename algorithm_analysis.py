@@ -76,7 +76,6 @@ def run_bonmin(test_problems,cutoff_values):
         result_dataframe.index = test_problems[:idx+1]
         save_obj(result_dataframe,'intermediate_results_bonmin')
         del current_model
-
     return result_dataframe
 
 
