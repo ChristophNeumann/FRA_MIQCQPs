@@ -49,22 +49,97 @@ def get_data_matrix(test_problems):
 def run_SOR(test_problems):
 
     result_matrix = []
-
     for idx, name in enumerate(test_problems):
-
         print('Testing problem ', name)
         original_model = load_pyomo_model(name)
         current_model = original_model.clone()
-        result = SOR(current_model)
         datalist = get_model_data_for_print(current_model)
+        result = SOR(current_model)
         result_matrix.append([datalist[0],datalist[1],result['time_ips'],result['time'],result['obj'],result['g']])
-        intermediate_dataframe = pd.DataFrame(np.array(result_matrix), columns=['vars','constrs','time L', 'time SOR', 'obj', 'constr_value'])
-        intermediate_dataframe.index = np.array(test_problems)[:idx+1]
-        save_obj(intermediate_dataframe,'intermediate_results')
+        result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['vars','constrs','time L', 'time SOR', 'obj', 'constr_value'])
+        result_dataframe.index = test_problems[:idx+1]
+        save_obj(result_dataframe,'intermediate_results')
         del original_model
         del current_model
         del result
+    return result_dataframe
+
+def run_bonmin(test_problems,cutoff_values):
+
+    result_matrix = []
+    for idx, name in enumerate(test_problems):
+        print('Testing problem ', name)
+        current_model = load_pyomo_model(name)
+        result_bonmin = solve_with_bonmin(current_model, 'b-hyb', cutoff_value=cutoff_values[idx])
+        result_matrix.append([result_bonmin['time'],result_bonmin['obj']])
+        result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['time_bonmin','obj_bonmin'])
+        result_dataframe.index = test_problems[:idx+1]
+        save_obj(result_dataframe,'intermediate_results_bonmin')
+        del current_model
+
+    return result_dataframe
+
 
 def save_obj(obj, name ):
     with open('results/'+ name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+def solve_with_bonmin(model,algorithm = 'b-ifp', time_limit = 60.0, cutoff_value = float('-inf'), name = 'default_problem', save_to_file = False):
+
+    if algorithm == 'gurobi':
+        opt = SolverFactory('gurobi',solver_io="python")
+        opt.options["Cutoff"] = cutoff_value
+        opt.options["SolutionLimit"] = 1
+        opt.options["TimeLimit"] = 300
+        opt.options["MIPFocus"] = 1
+        solver_message = opt.solve(model, tee=False)
+        time = solver_message['solver'][0]['Wallclock time']
+        obj = solver_message['Problem'][0]['Upper bound']
+        print('time gurobi:' + str(time))
+        print('objective gurobi: ' + str(obj))
+    else:
+        opt = SolverFactory('bonmin')
+        if cutoff_value > float('-inf'):
+            print('cutoff is set to: ' + str(cutoff_value))
+            opt.options['bonmin.cutoff'] = cutoff_value
+        if algorithm == 'b-hyb':
+            opt.options['bonmin.algorithm'] = 'b-hyb'
+            print('using b-hyb')
+        else:
+            opt.options['bonmin.algorithm'] = 'b-ifp'
+            print('using b-ifp')
+        # Set Options for solver.
+        opt.options['bonmin.solution_limit'] = '1'
+        opt.options['bonmin.time_limit'] = time_limit
+        if save_to_file:
+            opt.options['bonmin.fp_log_level'] = '2'
+            opt.options['bonmin.milp_log_level'] = '1'
+            orig_stdout = sys.stdout
+            f = open('solver_log/'+ name + algorithm + '.txt', 'w')
+            sys.stdout = f
+            solver_message = opt.solve(model,tee = True)
+            sys.stdout = orig_stdout
+            f.close()
+            time = solver_message.solver.time
+        else:
+            try:
+                solver_message = opt.solve(model, tee=False)
+                time = solver_message.solver.time
+            except:
+                print('Could not solve this problem due to a value error')
+                time = np.inf
+                solver_message = None
+
+    # Solver time and objective
+        if time >= opt.options['bonmin.time_limit'] :
+            time = np.inf
+            obj = np.inf
+        else:
+            model.solutions.store_to(solver_message)
+            obj = solver_message.solution.objective.get('obj').get('Value')
+            print('time B-Hyb:' + str(time))
+            print('objective B-Hyb: ' + str(obj))
+
+    return {'time': time,
+            'obj': obj,
+             'solver_message': solver_message}
