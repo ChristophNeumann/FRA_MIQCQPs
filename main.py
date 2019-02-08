@@ -5,7 +5,7 @@ from FRA_SOR import *
 from algorithm_analysis import *
 sys.setrecursionlimit(5000)
 
-testbed = 'intermediate'
+testbed = 'small_testset'
 test_instances = read_test_instances(testbed)
 result_SOR = run_SOR(test_instances)
 save_obj(result_SOR,'res_SOR_overview_' + testbed)

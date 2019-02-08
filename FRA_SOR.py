@@ -4,12 +4,13 @@ from milp_formulation import *
 import numpy as np
 
 
-def SOR(m, nonlinear_solver = 'ipopt'):
+def SOR(m, nonlinear_solver = 'ipopt', time_limit = 600):
 
     vars_original = get_model_vars(m)
     is_int = bool_vec_is_int(m)
     eips, time_IPS = enlarged_IPS(m)
     opt = SolverFactory(nonlinear_solver)
+    opt.options["max_cpu_time"] = time_limit
     solver_message = opt.solve(eips, tee=False)
     runtime = solver_message.solver.time
     if model_status(solver_message) == 'optimal':

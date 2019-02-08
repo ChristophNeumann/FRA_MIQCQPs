@@ -83,7 +83,7 @@ def save_obj(obj, name ):
     with open('results/'+ name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
-def solve_with_bonmin(model,algorithm = 'b-ifp', time_limit = 60.0, cutoff_value = float('-inf'), name = 'default_problem', save_to_file = False):
+def solve_with_bonmin(model,algorithm = 'b-ifp', time_limit = 600.0, cutoff_value = float('-inf'), name = 'default_problem', save_to_file = False):
 
     if algorithm == 'gurobi':
         opt = SolverFactory('gurobi',solver_io="python")
