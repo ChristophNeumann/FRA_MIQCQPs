@@ -57,6 +57,7 @@ def run_SOR(test_problems):
         result = SOR(current_model)
         result_matrix.append([datalist[0],datalist[1],result['time_ips'],result['time'],result['obj'],result['g']])
         result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['vars','constrs','time L', 'time SOR', 'obj', 'constr_value'])
+        result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']] = result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']].apply(pd.to_numeric)
         result_dataframe.index = test_problems[:idx+1]
         save_obj(result_dataframe,'intermediate_results')
         del original_model
