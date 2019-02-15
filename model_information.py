@@ -313,7 +313,20 @@ def get_enlargement_nonlinear(constr):
     else:
         active_vars = get_vars_from_constr(constr)
         nabla_G = gradient_symb(constr,active_vars)
-
+        for i, grad in enumerate(nabla_G):
+            coeff = get_coeff(grad,active_vars)
+            if grad._const != 0:
+                coeff = np.append(coeff,grad._const)
+            coeff[i] = coeff[i]/2 # If we have y_1**2, we get coeff 2, but want 1.
+            if any(coeff - np.floor(coeff) > 0): # If any value is no integer, we cannot enlarge the constraint
+                return 0
+            else:
+                coeff = coeff.astype(int)
+            if i==0:
+                omega = gcd_vec(coeff)
+            else:
+                omega = min(omega,gcd_vec(coeff))
+                #Todo: How to obtain constants?
 
     return  omega
 
