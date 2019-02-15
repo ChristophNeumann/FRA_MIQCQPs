@@ -295,3 +295,30 @@ def get_number_of_binary_vars(m):
     return int(sum(isBinary))
 
 
+def contains_cont_vars(constr):
+
+    vars = get_vars_from_constr(constr)
+    for v in vars:
+        if str(v.domain) not in int_type:
+            return True
+    return False
+
+
+
+def get_enlargement_nonlinear(constr):
+
+    omega = 0
+    if contains_cont_vars(constr):
+        return omega
+    else:
+        active_vars = get_vars_from_constr(constr)
+        nabla_G = gradient_symb(constr,active_vars)
+
+
+    return  omega
+
+def get_coeff_nonlinear_constr(c):
+    result = 0
+    return result
+
+
