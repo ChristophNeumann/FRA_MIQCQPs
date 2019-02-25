@@ -5,10 +5,10 @@ from model_information import *
 import numbers
 #from model_manipulation import *
 
-def milp_for_L(nablaG, D_y, y, time_limit = 600):
+def milp_for_L(nablaG, D_y, y_active, time_limit = 600):
 
 #    print("Computing bigM values")
-    M_u, M_v = bigMNabla(nablaG, y) #Compute bigM values
+    M_u, M_v = bigMNabla(nablaG, y_active) #Compute bigM values
 
 #    print("Computation of bigM done. Maximum value is:  " + str(max(max(M_u),max(M_v))))
     model = ConcreteModel()
@@ -17,7 +17,7 @@ def milp_for_L(nablaG, D_y, y, time_limit = 600):
     model.I = Set(initialize = range(len(D_y)))
 
     def bounds_y(model,j):
-        lb,ub = get_bounds(y)
+        lb,ub = get_bounds(y_active)
         return lb[j],ub[j]
 
     def bounds_u(model,j):
@@ -40,7 +40,7 @@ def milp_for_L(nablaG, D_y, y, time_limit = 600):
 
     def migrate_linear_constrs(model, i):
         constr = D_y[i]
-        coeff = get_coeff(constr,y)
+        coeff = get_coeff(constr, y_active)
         if is_leq_constr(constr):
             constr_add = sum( [coeff[i]*model.y[i] for i in range(len(coeff))] ) <= constr.upper()
         else:
@@ -54,7 +54,7 @@ def milp_for_L(nablaG, D_y, y, time_limit = 600):
         if isinstance(nablaG[j],numbers.Number):
             constr = float(nablaG[j]) == model.u[j] - model.v[j]
         else:
-            coeff = get_coeff(nablaG[j], y)
+            coeff = get_coeff(nablaG[j], y_active)
             constr = sum( [coeff[i]*model.y[i] for i in range(model.m)]) == model.u[j] - model.v[j] #Has to be done componentwise, returns numeric value otherwise
         return constr
 
