@@ -29,10 +29,11 @@ def enlarged_IPS(m):
     ## Step 2: nonlinear constrs. (Needs to be done BEFORE the linear constraints (see above))
     for constr in nonlinear_constrs:
         if not constr.equality:
-            L_infty, runtime_i = compute_lipschitz(constr,eips) #Todo: Enlargmenet
+            L_infty, runtime_i = compute_lipschitz(constr,eips)
+            omega = get_enlargement_nonlinear(constr)
             time_ips += runtime_i
             if is_leq_constr(constr):
-                constr.set_value(constr.body <= constr.upper() - 1/2*L_infty)
+                constr.set_value(constr.body <= constr.upper() - 1/2*L_infty + delta*omega)
             else:
                 constr.set_value(-constr.body <= -constr.lower() - 1/2*L_infty)
 

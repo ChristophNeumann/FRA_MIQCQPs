@@ -315,8 +315,12 @@ def get_enlargement_nonlinear(constr):
         nabla_G = gradient_symb(constr,active_vars)
         for i, grad in enumerate(nabla_G):
             coeff = get_coeff(grad,active_vars)
-            if grad._const != 0:
-                coeff = np.append(coeff,grad._const)
+            try:
+                const = grad._const
+            except:
+                const = 0
+            if const!=0:
+                coeff = np.append(coeff,grad._const) # coefficient of linear part. Gets appended so that coeff contains m+1 entries
             coeff[i] = coeff[i]/2 # If we have y_1**2, we get coeff 2, but want 1.
             if any(coeff - np.floor(coeff) > 0): # If any value is no integer, we cannot enlarge the constraint
                 return 0
@@ -326,8 +330,6 @@ def get_enlargement_nonlinear(constr):
                 omega = gcd_vec(coeff)
             else:
                 omega = min(omega,gcd_vec(coeff))
-                #Todo: How to obtain constants?
-
     return  omega
 
 def get_coeff_nonlinear_constr(c):
