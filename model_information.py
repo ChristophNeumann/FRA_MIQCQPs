@@ -74,15 +74,17 @@ def get_vars_from_constr(constr):
     """Returns all variables appearing in a constraint constr"""
     return list(identify_variables(constr.body))
 
-def get_active_int_vars_from_constr(constr, model):
-    y = get_int_vars(model)
+def get_active_int_vars_from_constr(constr, y):
     xy_active = get_vars_from_constr(constr)
     xy_active_name_list = [var.name for var in xy_active]
     y_active = []
-    for var in y:
+    index_inactive = []
+    for idx, var in enumerate(y):
         if var.name in xy_active_name_list:
             y_active.append(var)
-    return y_active
+        else:
+            index_inactive.append(idx)
+    return y_active, np.array(index_inactive)
 
 def get_vars_from_grad_el(el):
     """Returns all variables appearing in a constraint constr"""

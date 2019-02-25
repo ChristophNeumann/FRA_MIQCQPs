@@ -51,11 +51,19 @@ def enlarged_IPS(m):
     cont_relax_model(model_vars) # Integral variables become continuous
     return eips, time_ips
 
+def fill_with_zeros(nablaG_active,index_inactive):
+    nablaG = nablaG_active.tolist()
+    for idx in index_inactive:
+        nablaG.insert(idx,0.0)
+    return np.array(nablaG)
+
 def compute_lipschitz(constr, model):
-    y_active = get_active_int_vars_from_constr(constr, model)
+    y = get_int_vars(model)
+    y_active, index_inactive = get_active_int_vars_from_constr(constr, y)
+    nablaG = gradient_symb(constr, y_active)
+    nablaG = fill_with_zeros(nablaG,index_inactive)
     D = get_linear_constraints(model)
     D_y = filter_only_integer_constrains(D)
-    nablaG = gradient_symb(constr, y_active)
     if is_zero_vector(nablaG):
         L_infty = 0
         runtime = 0
@@ -66,7 +74,7 @@ def compute_lipschitz(constr, model):
         print("Constraint " + constr.name + " is linear in y")
         print("Found Lipschitz constant is: " + str(L_infty) )
     else:
-        L_infty, runtime = milp_for_L(nablaG, D_y, y_active) # Main work is done here!
+        L_infty, runtime = milp_for_L(nablaG, D_y, y) # Main work is done here!
     return L_infty, runtime
 
 def box_constrs_to_expr(m, in_vars):
