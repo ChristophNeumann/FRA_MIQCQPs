@@ -189,6 +189,12 @@ def get_int_vars(m):
     int_vars = [v for v in model_vars if (str(v.domain) in int_type)]
     return int_vars
 
+def get_cont_vars(m):
+    """Returns a list of all continuous variables from the model"""
+    model_vars = get_model_vars(m)
+    cont_vars = [v for v in model_vars if (str(v.domain) not in int_type)]
+    return cont_vars
+
 
 def get_linear_constrs(m):
     linear_constrs = []

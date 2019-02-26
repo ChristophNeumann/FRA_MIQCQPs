@@ -24,15 +24,13 @@ from model_information import *
 model = m = ConcreteModel()
 
 
-m.i1 = Var(within=Integers,bounds=(-1,2))
-m.i2 = Var(within=Integers,bounds=(-1,2))
-m.i3 = Var(within=Integers,bounds = (-2,2))
-m.x = Var(within = Reals)
+m.i1 = Var(within=Integers,bounds=(-1,3))
+m.i2 = Var(within=Integers,bounds=(-1,3))
+m.x = Var(within = Reals, bounds = (1,np.inf))
 
 m.obj = Objective(expr=  -m.i1 - m.i2, sense=minimize)
-m.c1 = Constraint(expr = m.i1 - m.i2 <=0)
-m.c2 = Constraint(expr = 3*m.i1**2 - m.i1*m.i2 + 2*m.i2**2 + 2.5*m.i2 + m.x**2 <= 10 )
-m.c3 = Constraint(expr = m.i1 + m.x <= 1000)
+m.c2 = Constraint(expr = 2*m.i1**2 + m.i2**2 <= 10 )
+m.c3 = Constraint(expr = m.i1 + m.x + m.i2 <= 2)
 m.c4 = Constraint(expr = 4*m.i1**2 + 2*m.i1 + 8*m.i1*m.i2 <= 3)
 
 eips, time_IPS = enlarged_IPS(m)

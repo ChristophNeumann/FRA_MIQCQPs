@@ -63,7 +63,8 @@ def compute_lipschitz(constr, model):
     nablaG = gradient_symb(constr, y_active)
     nablaG = fill_with_zeros(nablaG,index_inactive)
     D = get_linear_constraints(model)
-    D_y = filter_only_integer_constrains(D)
+#    D_y = filter_only_integer_constrains(D)
+
     if is_zero_vector(nablaG):
         L_infty = 0
         runtime = 0
@@ -74,7 +75,8 @@ def compute_lipschitz(constr, model):
         print("Constraint " + constr.name + " is linear in y")
         print("Found Lipschitz constant is: " + str(L_infty) )
     else:
-        L_infty, runtime = milp_for_L(nablaG, D_y, y) # Main work is done here!
+        x = get_cont_vars(model)
+        L_infty, runtime = milp_for_L(nablaG, D, x, y) # Main work is done here!
     return L_infty, runtime
 
 def box_constrs_to_expr(m, in_vars):

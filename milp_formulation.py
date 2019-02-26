@@ -5,19 +5,25 @@ from model_information import *
 import numbers
 #from model_manipulation import *
 
-def milp_for_L(nablaG, D_y, y_active, time_limit = 600):
+def milp_for_L(nablaG, D, x, y, time_limit = 600):
 
 #    print("Computing bigM values")
-    M_u, M_v = bigMNabla(nablaG, y_active) #Compute bigM values
+    M_u, M_v = bigMNabla(nablaG, y) #Compute bigM values
 
 #    print("Computation of bigM done. Maximum value is:  " + str(max(max(M_u),max(M_v))))
     model = ConcreteModel()
-    model.m = len(nablaG) #We differentiate wrt all integer variables
+    model.m = len(y) #We differentiate wrt all integer variables
+    model.n = len(x)
     model.J = Set(initialize = range(model.m))
-    model.I = Set(initialize = range(len(D_y)))
+    model.K = Set(initialize = range(model.n))
+    model.I = Set(initialize = range(len(D)))
 
     def bounds_y(model,j):
-        lb,ub = get_bounds(y_active)
+        lb,ub = get_bounds(y)
+        return lb[j],ub[j]
+
+    def bounds_x(model,j):
+        lb,ub = get_bounds(x)
         return lb[j],ub[j]
 
     def bounds_u(model,j):
@@ -27,6 +33,7 @@ def milp_for_L(nablaG, D_y, y_active, time_limit = 600):
         return 0, M_v[j]
 
     model.y = Var(model.J, domain= Reals, initialize = 0, bounds = bounds_y)
+    model.x = Var(model.K, domain= Reals, initialize=0, bounds = bounds_x)
 
     model.u = Var(model.J, domain=Reals, initialize = 0, bounds = bounds_u)
     model.v = Var(model.J, domain=Reals, initialize = 0, bounds = bounds_v)
@@ -39,12 +46,17 @@ def milp_for_L(nablaG, D_y, y_active, time_limit = 600):
 
 
     def migrate_linear_constrs(model, i):
-        constr = D_y[i]
-        coeff = get_coeff(constr, y_active)
+        constr = D[i]
+        xy = x+y
+        coeff = np.array(get_coeff(constr,xy))
+        coeff_x = coeff[:len(x)]
+        coeff_y = coeff[len(x):]
         if is_leq_constr(constr):
-            constr_add = sum( [coeff[i]*model.y[i] for i in range(len(coeff))] ) <= constr.upper()
+            constr_add = sum( [coeff_y[i]*model.y[i] for i in range(len(coeff_y))] ) + \
+                         sum([coeff_x[i] * model.x[i] for i in range(len(coeff_x))]) <= constr.upper()
         else:
-            constr_add = sum( [coeff[i]*model.y[i] for i in range(len(coeff))] ) >= constr.lower()
+            constr_add = sum( [coeff_y[i]*model.y[i] for i in range(len(coeff_y))] ) +\
+                         sum([coeff_x[i] * model.x[i] for i in range(len(coeff_x))]) >= constr.lower()
         return constr_add
 
 
@@ -54,7 +66,7 @@ def milp_for_L(nablaG, D_y, y_active, time_limit = 600):
         if isinstance(nablaG[j],numbers.Number):
             constr = float(nablaG[j]) == model.u[j] - model.v[j]
         else:
-            coeff = get_coeff(nablaG[j], y_active)
+            coeff = get_coeff(nablaG[j], y)
             constr = sum( [coeff[i]*model.y[i] for i in range(model.m)]) == model.u[j] - model.v[j] #Has to be done componentwise, returns numeric value otherwise
         return constr
 
@@ -67,7 +79,7 @@ def milp_for_L(nablaG, D_y, y_active, time_limit = 600):
     model.lgs = Constraint(model.J, rule=lgs_constr)
     model.compl_1 = Constraint(model.J, rule=compl_constr_bigm1)
     model.compl_2 = Constraint(model.J, rule=compl_constr_bigm2)
-    model.D_y = Constraint(model.I, rule = migrate_linear_constrs)
+    model.D = Constraint(model.I, rule = migrate_linear_constrs)
     # Write the LP file for debugging purposes
 #    model.write('model.lp')
     # Solver
