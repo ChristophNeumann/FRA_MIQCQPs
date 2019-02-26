@@ -53,7 +53,7 @@ def get_data_matrix(test_problems):
     pd_data_matrix.index = names
     return pd_data_matrix
 
-def run_SOR(test_problems):
+def run_SOR(test_problems, time_limit = 600.0):
 
     result_matrix = []
     for idx, name in enumerate(test_problems):
@@ -61,24 +61,29 @@ def run_SOR(test_problems):
         original_model = load_pyomo_model(name)
         current_model = original_model.clone()
         datalist = get_model_data_for_print(current_model)
-        result = SOR(current_model)
+        result = SOR(current_model, time_limit=time_limit)
         result_matrix.append([datalist[0],datalist[1],result['time_ips'],result['time'],result['obj'],result['g']])
         result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['vars','constrs','time L', 'time SOR', 'obj', 'constr_value'])
         result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']] = result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']].apply(pd.to_numeric)
         result_dataframe.index = test_problems[:idx+1]
         save_obj(result_dataframe,'intermediate_results')
+        print("#################################################")
+        print(str(idx+1) + "/" + str(len(test_problems)) + "done.")
+        print("Value obtained by SOR is: " + str(result['obj']))
+        print("#################################################")
         del original_model
         del current_model
         del result
     return result_dataframe
 
-def run_bonmin(test_problems,cutoff_values):
+def run_bonmin(test_problems,cutoff_values, time_limit = 600.0):
 
     result_matrix = []
     for idx, name in enumerate(test_problems):
         print('Testing problem ', name)
         current_model = load_pyomo_model(name)
-        result_bonmin = solve_with_bonmin(current_model, 'b-hyb', cutoff_value=cutoff_values[idx])
+        result_bonmin = solve_with_bonmin(current_model, 'b-hyb', \
+                                          cutoff_value=cutoff_values[idx], time_limit = time_limit)
         result_matrix.append([result_bonmin['time'],result_bonmin['obj']])
         result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['time_bonmin','obj_bonmin'])
         result_dataframe.index = test_problems[:idx+1]
