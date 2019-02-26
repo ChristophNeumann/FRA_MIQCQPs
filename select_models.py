@@ -9,7 +9,7 @@ def load_pyomo_model(problem_name):
     testinstance = importlib.import_module(problem_name)
     return testinstance.m
 
-def read_test_instances(path):
+def read_all_test_instances(path):
     '''Read test instance Data '''
     files = listdir(path)
     suffix = ".py"
@@ -24,7 +24,7 @@ def copy_files(instance_list ,from_path, to_path):
 
 def copy_models_without_eq_constrs(path_from, path_to):
     sys.path.append(path_from)
-    instances = read_test_instances(path_from)
+    instances = read_all_test_instances(path_from)
     print(len(instances))
     testset = []
     for instance in instances:

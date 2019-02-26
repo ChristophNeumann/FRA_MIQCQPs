@@ -7,6 +7,8 @@ sys.setrecursionlimit(5000)
 
 testbed = 'small_testset'
 test_instances = read_test_instances(testbed)
+
+testbed_instances = read_all_test_instances()
 result_SOR = run_SOR(test_instances)
 save_obj(result_SOR,'res_SOR_overview_' + testbed)
 cutoff_values_for_bonmin= np.array(result_SOR['obj'],dtype = float)

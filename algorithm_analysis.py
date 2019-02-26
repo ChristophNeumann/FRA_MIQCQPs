@@ -20,6 +20,13 @@ def read_test_instances(filename):
     f.close()
     return np.array(test_problems)
 
+def read_all_test_instances():
+    files = os.listdir('./testbed')
+    suffix = ".py"
+    pyfiles = [file for file in files if file.endswith(suffix)]
+    testset = [file[:-3] for file in pyfiles]
+    return testset
+
 def get_model_data_for_print(m):
     p_quadrupel = numbers_constrs(m)
     is_int = bool_vec_is_int(m)
