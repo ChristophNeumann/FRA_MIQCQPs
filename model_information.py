@@ -18,11 +18,11 @@ def bool_vec_is_int(m):
 
 
 def get_bounds(var_list):
-    lb = np.zeros(len(var_list))
-    ub = np.zeros(len(var_list))
-    for i,var in enumerate(var_list):
-        lb[i] = var.bounds[0]
-        ub[i] = var.bounds[1]
+    lb = []
+    ub = []
+    for var in var_list:
+        lb.append(var.bounds[0])
+        ub.append(var.bounds[1])
     return lb, ub
 
 
