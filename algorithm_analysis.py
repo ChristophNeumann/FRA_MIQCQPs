@@ -6,6 +6,7 @@ import os
 import pandas as pd
 import pickle
 from FRA_SOR import *
+from globals import time_limit_SOR
 
 def load_pyomo_model(problem_name):
     testinstance = importlib.import_module(problem_name)
@@ -53,7 +54,7 @@ def get_data_matrix(test_problems):
     pd_data_matrix.index = names
     return pd_data_matrix
 
-def run_SOR(test_problems, time_limit = 600.0):
+def run_SOR(test_problems):
 
     result_matrix = []
     for idx, name in enumerate(test_problems):
@@ -61,7 +62,7 @@ def run_SOR(test_problems, time_limit = 600.0):
         original_model = load_pyomo_model(name)
         current_model = original_model.clone()
         datalist = get_model_data_for_print(current_model)
-        result = SOR(current_model, time_limit=time_limit)
+        result = SOR(current_model)
         result_matrix.append([datalist[0],datalist[1],result['time_ips'],result['time'],result['obj'],result['g']])
         result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['vars','constrs','time L', 'time SOR', 'obj', 'constr_value'])
         result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']] = result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']].apply(pd.to_numeric)

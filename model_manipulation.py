@@ -30,6 +30,8 @@ def enlarged_IPS(m):
     for constr in nonlinear_constrs:
         if not constr.equality:
             L_infty, runtime_i = compute_lipschitz(constr,eips)
+            if L_infty == np.inf:
+                return None, runtime_i # EIPS cannot be computed
             omega = get_enlargement_nonlinear(constr)
             time_ips += runtime_i
             if is_leq_constr(constr):

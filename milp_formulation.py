@@ -4,8 +4,9 @@ from pyomo.repn import generate_canonical_repn
 from model_information import *
 import numbers
 #from model_manipulation import *
+from globals import time_limit_Lipschitz
 
-def milp_for_L(nablaG, D, x, y, time_limit = 1200):
+def milp_for_L(nablaG, D, x, y):
 
 #    print("Computing bigM values")
     M_u, M_v = bigMNabla(nablaG, y) #Compute bigM values
@@ -85,11 +86,14 @@ def milp_for_L(nablaG, D, x, y, time_limit = 1200):
     # Solver
     # possible choices: 'ipopt' (NLP), 'glpk' (MIP), 'gurobi'
     opt = SolverFactory('gurobi')
-    opt.options["TimeLimit"] = time_limit
+    opt.options["TimeLimit"] = time_limit_Lipschitz
     # Solve statement
     result_obj = opt.solve(model, tee=False)
     runtime = result_obj.solver.time
-    L_const = value(model.obj)
+    if runtime < time_limit_Lipschitz:
+        L_const = value(model.obj)
+    else:
+        L_const = np.inf
     print("Found Lipschitz constant is:   " + str(L_const))
 
 #    model.pprint()
