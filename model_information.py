@@ -153,9 +153,11 @@ def gradient(constr, variables):
 
 
 def gradient_symb(constr, variables):
-    grad_num = np.array([partial for partial in differentiate(constr.body, wrt_list=variables)])
     if not is_leq_constr(constr):
-        grad_num = -grad_num
+        diff = -constr.body
+    else:
+        diff = constr.body
+    grad_num = [partial for partial in differentiate(diff, wrt_list=variables)]
     return grad_num
 
 
@@ -347,7 +349,7 @@ def get_enlargement_nonlinear(constr):
                 omega = gcd_vec(coeff)
             else:
                 omega = min(omega,gcd_vec(coeff))
-    return  omega
+    return omega
 
 def get_coeff_nonlinear_constr(c):
     result = 0

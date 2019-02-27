@@ -5,7 +5,7 @@ from model_information import *
 import numbers
 #from model_manipulation import *
 
-def milp_for_L(nablaG, D, x, y, time_limit = 600):
+def milp_for_L(nablaG, D, x, y, time_limit = 1200):
 
 #    print("Computing bigM values")
     M_u, M_v = bigMNabla(nablaG, y) #Compute bigM values

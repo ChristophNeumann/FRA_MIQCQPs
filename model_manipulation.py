@@ -51,11 +51,10 @@ def enlarged_IPS(m):
     cont_relax_model(model_vars) # Integral variables become continuous
     return eips, time_ips
 
-def fill_with_zeros(nablaG_active,index_inactive):
-    nablaG = nablaG_active.tolist()
+def fill_with_zeros(nablaG,index_inactive):
     for idx in index_inactive:
         nablaG.insert(idx,0.0)
-    return np.array(nablaG)
+    return nablaG
 
 def compute_lipschitz(constr, model):
     y = get_int_vars(model)
@@ -70,7 +69,7 @@ def compute_lipschitz(constr, model):
         runtime = 0
         print("Constraint " + constr.name + " has no integral variables")
     elif contains_only_numbers(nablaG):
-        L_infty = np.linalg.norm(nablaG)
+        L_infty = np.linalg.norm(np.array(nablaG))
         runtime = 0
         print("Constraint " + constr.name + " is linear in y")
         print("Found Lipschitz constant is: " + str(L_infty) )

@@ -4,8 +4,8 @@ import pandas as pd
 from FRA_SOR import *
 from algorithm_analysis import *
 sys.setrecursionlimit(5000)
-time_limit = 600.0
-#testbed = 'small_testset'
+time_limit = 1800.0
+#testbed = 'current'
 #test_instances = read_test_instances(testbed)
 
 testbed = 'all_instances'
