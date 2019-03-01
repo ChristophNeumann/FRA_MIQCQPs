@@ -5,6 +5,7 @@ from model_information import *
 import numbers
 #from model_manipulation import *
 from globals import time_limit_Lipschitz
+from globals import delta_enlargement
 
 def milp_for_L(nablaG, D, x, y):
 
@@ -21,7 +22,7 @@ def milp_for_L(nablaG, D, x, y):
 
     def bounds_y(model,j):
         lb,ub = get_bounds(y)
-        return lb[j],ub[j]
+        return lb[j] - 1/2*(1-delta_enlargement) ,ub[j] + 1/2*(1-delta_enlargement) # Compute Lipschitz constant on slightly larger set
 
     def bounds_x(model,j):
         lb,ub = get_bounds(x)
@@ -108,6 +109,8 @@ def bigMNabla(nablaG, y):
     M_u = np.zeros(p)
     M_v = np.zeros(p)
     lb, ub = get_bounds(y)
+    lb = np.array(lb) - 1/2*(1-delta_enlargement)*np.ones(len(lb))
+    ub = np.array(ub) + 1/2*(1-delta_enlargement)*np.ones(len(ub))
 
     for i in range(0,p):
         if isinstance(nablaG[i],numbers.Number):

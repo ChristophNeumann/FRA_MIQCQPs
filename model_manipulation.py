@@ -2,8 +2,7 @@ from model_information import *
 from pyomo.core.base.expr import clone_expression
 from milp_formulation import *
 from pyomo.repn import generate_canonical_repn
-ABS_BOUND = 1E12 #Lower bound for objective value/ variables in case of unboundedness
-delta = 1-10**-4 # Enlargement parameter
+from globals import *
 
 def add_objective_bound(m):
     m.obj_con = Constraint(expr = m.obj.expr >= -ABS_BOUND)
@@ -35,7 +34,7 @@ def enlarged_IPS(m):
             omega = get_enlargement_nonlinear(constr)
             time_ips += runtime_i
             if is_leq_constr(constr):
-                constr.set_value(constr.body <= constr.upper() - 1/2*L_infty + delta*omega)
+                constr.set_value(constr.body <= constr.upper() - 1 / 2 * L_infty + delta_enlargement * omega)
             else:
                 constr.set_value(-constr.body <= -constr.lower() - 1/2*L_infty)
 
@@ -46,9 +45,9 @@ def enlarged_IPS(m):
         g = enlargement_param(coeff,is_int)
         if not constr.equality:
             if is_leq_constr(constr):
-                constr.set_value(constr.body <= floor_g(constr.upper(),g)-1/2*beta + delta*g)
+                constr.set_value(constr.body <= floor_g(constr.upper(),g) - 1 / 2 * beta + delta_enlargement * g)
             else:
-                constr.set_value(-constr.body <= floor_g(-constr.lower(),g) - 1/2*beta + delta*g)
+                constr.set_value(-constr.body <= floor_g(-constr.lower(),g) - 1 / 2 * beta + delta_enlargement * g)
 
     cont_relax_model(model_vars) # Integral variables become continuous
     return eips, time_ips
@@ -90,9 +89,9 @@ def box_constrs_to_expr(m, in_vars):
 
 def enlarge_box_constraint(var):
     if (var.bounds is not None) and (var.bounds[0] is not None):
-        var.setlb(math.ceil(var.bounds[0]) - delta / 2)
+        var.setlb(math.ceil(var.bounds[0]) - delta_enlargement / 2)
     if (var.bounds is not None) and (var.bounds[1] is not None):
-        var.setub(math.floor(var.bounds[1]) + delta / 2)
+        var.setub(math.floor(var.bounds[1]) + delta_enlargement / 2)
 
 
 def cont_relax_model(model_vars):
