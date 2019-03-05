@@ -68,12 +68,12 @@ def compute_lipschitz(constr, model):
     if is_zero_vector(nablaG):
         L_infty = 0
         runtime = 0
-        print("Constraint " + constr.name + " has no integral variables")
+ #       print("Constraint " + constr.name + " has no integral variables")
     elif contains_only_numbers(nablaG):
         L_infty = np.linalg.norm(np.array(nablaG))
         runtime = 0
-        print("Constraint " + constr.name + " is linear in y")
-        print("Found Lipschitz constant is: " + str(L_infty) )
+      #  print("Constraint " + constr.name + " is linear in y")
+      #  print("Found Lipschitz constant is: " + str(L_infty) )
     else:
         x = get_cont_vars(model)
         L_infty, runtime = milp_for_L(nablaG, D, x, y) # Main work is done here!

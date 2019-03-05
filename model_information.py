@@ -63,6 +63,8 @@ def is_leq_constr(constr):
 
 def constr_value(constr):
     """Rearranges a constraint at some point x to g_i(x) <= 0 and computes g_i(x"""
+    if constr.equality: # We leave equality constraints untouched and only care for inequality constraints
+        return 0
     if is_leq_constr(constr):
         g_val = constr.body() - constr.upper()
     else:

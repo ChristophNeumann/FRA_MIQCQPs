@@ -93,9 +93,14 @@ def milp_for_L(nablaG, D, x, y):
     runtime = result_obj.solver.time
     if runtime < time_limit_Lipschitz:
         L_const = value(model.obj)
+        print('Upper bound is:' + str(result_obj['Problem'][0]['Upper bound']))
+        print('Lipschitz constant is: ' + str(L_const))
+        ub = result_obj['Problem'][0]['Upper bound']
+        L_const = max(L_const,ub)*1.01
+        print(L_const)
     else:
         L_const = np.inf
-    print("Found Lipschitz constant is:   " + str(L_const))
+   # print("Found Lipschitz constant is:   " + str(L_const))
 
 #    model.pprint()
 
@@ -125,8 +130,8 @@ def bigMNabla(nablaG, y):
                 if coefficient< 0:
                     M_u[i] += coefficient*lb[j]
                     M_v[i] += coefficient*ub[j]
-        M_u[i] = max(M_u[i], 0)
-        M_v[i] = max(-M_v[i], 0)
+        M_u[i] = max(M_u[i], 0) + 1
+        M_v[i] = max(-M_v[i], 0) + 1
 
     return M_u, M_v
 
