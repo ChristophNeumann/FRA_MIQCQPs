@@ -22,7 +22,10 @@ def milp_for_L(nablaG, D, x, y):
 
     def bounds_y(model,j):
         lb,ub = get_bounds(y)
-        return lb[j] - 1/2*(1-delta_enlargement) ,ub[j] + 1/2*(1-delta_enlargement) # Compute Lipschitz constant on slightly larger set
+        lb_adapted = lb[j] - 1/2*(1-delta_enlargement)
+        ub_adapted = ub[j] + 1/2*(1-delta_enlargement)
+        print("Lower_bound is: " + str(lb_adapted))
+        return  lb_adapted , ub_adapted # Compute Lipschitz constant on slightly larger set
 
     def bounds_x(model,j):
         lb,ub = get_bounds(x)
@@ -95,8 +98,9 @@ def milp_for_L(nablaG, D, x, y):
         L_const = value(model.obj)
         print('Upper bound is:' + str(result_obj['Problem'][0]['Upper bound']))
         print('Lipschitz constant is: ' + str(L_const))
+        print(var_value(get_model_vars(model)))
         ub = result_obj['Problem'][0]['Upper bound']
-        L_const = max(L_const,ub)*1.01
+        L_const = max(L_const,ub)
         print(L_const)
     else:
         L_const = np.inf
