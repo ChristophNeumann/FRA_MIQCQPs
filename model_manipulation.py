@@ -33,7 +33,7 @@ def enlarged_IPS(m):
             if is_leq_constr(constr):
                 constr.set_value(constr.body <= constr.upper() - 1 / 2 * L_infty + delta_enlargement * omega)
             else:
-                constr.set_value(-constr.body <= -constr.lower() - 1/2*L_infty)
+                constr.set_value(-constr.body <= -constr.lower() - 1/2*L_infty + delta_enlargement * omega)
 
 
     ## Step 2: EIPS of linear constrs
