@@ -1,5 +1,5 @@
 import numpy as np
-time_limit_Lipschitz = 1800.0
+time_limit_Lipschitz = 3600.0
 time_limit_SOR = 600.0
 nonlinear_solver = 'ipopt'
 write_log = False

@@ -90,9 +90,9 @@ def box_constrs_to_expr(m, in_vars):
 
 def enlarge_box_constraint(var):
     if (var.bounds is not None) and (var.bounds[0] is not None):
-        var.setlb(math.ceil(var.bounds[0]) - delta_enlargement / 2)
+        var.setlb(math.ceil(var.bounds[0]) + 1/2 - delta_enlargement)
     if (var.bounds is not None) and (var.bounds[1] is not None):
-        var.setub(math.floor(var.bounds[1]) + delta_enlargement / 2)
+        var.setub(math.floor(var.bounds[1]) - 1/2 + delta_enlargement)
 
 
 def cont_relax_model(model_vars):

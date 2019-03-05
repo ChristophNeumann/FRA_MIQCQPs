@@ -22,9 +22,8 @@ def milp_for_L(nablaG, D, x, y):
 
     def bounds_y(model,j):
         lb,ub = get_bounds(y)
-        lb_adapted = math.ceil(lb[j]) - 1/2*delta_enlargement
-        ub_adapted = math.floor(ub[j]) + 1/2*delta_enlargement
-        print("Lower_bound is: " + str(lb_adapted))
+        lb_adapted = math.ceil(lb[j]) + 1/2 - delta_enlargement
+        ub_adapted = math.floor(ub[j]) - 1/2 + delta_enlargement
         return  lb_adapted , ub_adapted # Compute Lipschitz constant on slightly larger set
 
     def bounds_x(model,j):
@@ -118,8 +117,8 @@ def bigMNabla(nablaG, y):
     M_u = np.zeros(p)
     M_v = np.zeros(p)
     lb, ub = get_bounds(y)
-    lb = np.ceil(np.array(lb)) - 1/2*delta_enlargement*np.ones(len(lb))
-    ub = np.floor(np.array(ub)) + 1/2*delta_enlargement*np.ones(len(ub))
+    lb = np.ceil(np.array(lb)) + (1/2-delta_enlargement)*np.ones(len(lb))
+    ub = np.floor(np.array(ub)) + (-1/2+delta_enlargement)*np.ones(len(ub))
 
     for i in range(0,p):
         if isinstance(nablaG[i],numbers.Number):
