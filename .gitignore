@@ -7,4 +7,6 @@
 !/results/
 !/results/Evaluation_Paper.ipynb
 !/results/intermediate_results.pkl
+!/testmodels
+!/testmodels/*.py
 

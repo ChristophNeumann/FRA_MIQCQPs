@@ -13,19 +13,16 @@ def enlarged_IPS(m):
     1. Compute the EIPS of box constraints
     2. Compute the EIPS of nonlinear constraints
     3. Compute the EIPS of polyhedral constraints that are NO box constraints
-    This order is crucial, due to the reason that we compute the Lipschitz constants on tilde D (see paper) that
-    incorporate enlarged box constraints, but the original linear constraints!
     '''
 
     time_ips = 0
     eips = m.clone()
     linear_constrs = get_linear_constraints(eips)
     nonlinear_constrs = get_nonlinear_constrs(eips)
-    model_vars = get_model_vars(eips)
     is_int = bool_vec_is_int(eips)
-    EIPS_box_constrs(model_vars)     #Step 1
+    model_vars = get_model_vars(eips)
 
-    ## Step 2: nonlinear constrs. (Needs to be done BEFORE the linear constraints (see above))
+    ## Step 1: nonlinear constrs.
     for constr in nonlinear_constrs:
         if not constr.equality:
             L_infty, runtime_i = compute_lipschitz(constr,eips)
@@ -38,7 +35,8 @@ def enlarged_IPS(m):
             else:
                 constr.set_value(-constr.body <= -constr.lower() - 1/2*L_infty)
 
-    ## Step 3: EIPS of linear constrs
+
+    ## Step 2: EIPS of linear constrs
     for constr in linear_constrs:
         coeff = get_coeff(constr, model_vars)
         beta = np.linalg.norm(coeff[is_int],ord=1)
@@ -49,6 +47,8 @@ def enlarged_IPS(m):
             else:
                 constr.set_value(-constr.body <= floor_g(-constr.lower(),g) - 1 / 2 * beta + delta_enlargement * g)
 
+    ## Step 3: Enlarge box constraints
+    EIPS_box_constrs(model_vars)
     cont_relax_model(model_vars) # Integral variables become continuous
     return eips, time_ips
 
@@ -58,6 +58,7 @@ def fill_with_zeros(nablaG,index_inactive):
     return nablaG
 
 def compute_lipschitz(constr, model):
+    # Todo: Assertion that all lower bounds are integers!
     y = get_int_vars(model)
     y_active, index_inactive = get_active_int_vars_from_constr(constr, y)
     nablaG = gradient_symb(constr, y_active)
