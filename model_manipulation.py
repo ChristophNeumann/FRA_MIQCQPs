@@ -2,11 +2,11 @@ from model_information import *
 from pyomo.core.base.expr import clone_expression
 from milp_formulation import *
 from pyomo.repn import generate_canonical_repn
-from globals import *
+import globals
 import logging
 
 def add_objective_bound(m):
-    m.obj_con = Constraint(expr = m.obj.expr >= -ABS_BOUND)
+    m.obj_con = Constraint(expr = m.obj.expr >= -globals.ABS_BOUND)
 
 def enlarged_IPS(m):
     ''' Computes the enlarged inner parallel set of a MIQCQP m.
@@ -32,9 +32,9 @@ def enlarged_IPS(m):
             omega = get_enlargement_nonlinear(constr)
             time_ips += runtime_i
             if is_leq_constr(constr):
-                constr.set_value(constr.body <= constr.upper() - 1 / 2 * L_infty + delta_enlargement * omega)
+                constr.set_value(constr.body <= constr.upper() - 1 / 2 * L_infty + globals.delta_enlargement * omega)
             else:
-                constr.set_value(-constr.body <= -constr.lower() - 1/2*L_infty + delta_enlargement * omega)
+                constr.set_value(-constr.body <= -constr.lower() - 1/2*L_infty + globals.delta_enlargement * omega)
 
 
     ## Step 2: EIPS of linear constrs
@@ -44,9 +44,9 @@ def enlarged_IPS(m):
         g = enlargement_param(coeff,is_int)
         if not constr.equality:
             if is_leq_constr(constr):
-                constr.set_value(constr.body <= floor_g(constr.upper(),g) - 1 / 2 * beta + delta_enlargement * g)
+                constr.set_value(constr.body <= floor_g(constr.upper(),g) - 1 / 2 * beta + globals.delta_enlargement * g)
             else:
-                constr.set_value(-constr.body <= floor_g(-constr.lower(),g) - 1 / 2 * beta + delta_enlargement * g)
+                constr.set_value(-constr.body <= floor_g(-constr.lower(),g) - 1 / 2 * beta + globals.delta_enlargement * g)
 
     ## Step 3: Enlarge box constraints
     EIPS_box_constrs(model_vars)
@@ -89,9 +89,9 @@ def box_constrs_to_expr(m, in_vars):
 
 def enlarge_box_constraint(var):
     if (var.bounds is not None) and (var.bounds[0] is not None):
-        var.setlb(math.ceil(var.bounds[0]) + 1/2 - delta_enlargement)
+        var.setlb(math.ceil(var.bounds[0]) + 1/2 - globals.delta_enlargement)
     if (var.bounds is not None) and (var.bounds[1] is not None):
-        var.setub(math.floor(var.bounds[1]) - 1/2 + delta_enlargement)
+        var.setub(math.floor(var.bounds[1]) - 1/2 + globals.delta_enlargement)
 
 
 def cont_relax_model(model_vars):
@@ -122,12 +122,12 @@ def activate_nonlinear_constrs(m):
 def add_box_constraints(m):
     for var in get_model_vars(m):
         if (var.bounds is None) or ((var.bounds[0] == None) and (var.bounds[1] == None)):
-            var.setlb(-ABS_BOUND)
-            var.setub(ABS_BOUND)
+            var.setlb(-globals.ABS_BOUND)
+            var.setub(globals.ABS_BOUND)
         elif var.bounds[0] is None:
-            var.setlb(-ABS_BOUND)
+            var.setlb(-globals.ABS_BOUND)
         elif var.bounds[1] is None:
-            var.setub(ABS_BOUND)
+            var.setub(globals.ABS_BOUND)
 
 def set_var_vals(var_list,value_list,is_int):
     for idx,var in enumerate(var_list):
@@ -154,9 +154,9 @@ def epgraph_reformulation(model):
         print('lower bound is: ' + str(lb))
     except:
         print('cannot compute lower bound with gurobi')
-        lb = -ABS_BOUND
+        lb = -globals.ABS_BOUND
     epi_model = model.clone()
-    epi_model.alpha_epi = Var(within = Reals, bounds =(lb,ABS_BOUND) )
+    epi_model.alpha_epi = Var(within = Reals, bounds =(lb,globals.ABS_BOUND) )
     epi_model.con_epi = Constraint(expr = epi_model.obj.expr <= epi_model.alpha_epi )
     epi_model.obj = Objective(expr = epi_model.alpha_epi, sense = minimize)
     return epi_model
