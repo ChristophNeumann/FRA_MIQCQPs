@@ -1,10 +1,12 @@
 import numpy as np
 import pandas as pd
+import logging
 
 from FRA_SOR import *
 from algorithm_analysis import *
 sys.setrecursionlimit(5000)
 
+#logging.basicConfig(level=logging.INFO)
 testbed = 'current'
 test_instances = read_test_instances(testbed)
 #test_instances = testset_bonmin

@@ -3,6 +3,7 @@ from model_manipulation import *
 from milp_formulation import *
 import numpy as np
 from globals import *
+import logging
 
 def SOR(m):
 
@@ -12,24 +13,21 @@ def SOR(m):
     if eips:
         opt = SolverFactory(nonlinear_solver)
         opt.options["max_cpu_time"] = time_limit_SOR
-        #eips.pprint()
+#        logging.debug(eips.pprint())
         solver_message = opt.solve(eips, tee= write_log)
         runtime = solver_message.solver.time
         if model_status(solver_message) == 'optimal':
             x = rounding(var_value(get_model_vars(eips)), is_int)
-            print(constr_value(eips.c1))
-            print(var_value(get_model_vars(eips)))
-            print(x)
+            logging.debug(var_value(get_model_vars(eips)))
             set_var_vals(vars_original, x, is_int)
             obj_val = value(m.obj)
             g_max = max_constr_value(m)
-            print(str(g_max))
             if g_max > feas_tol_SOR:
-                print("WARNING: A constraint is violated by: "+ str(g_max))
+                logging.warning("A constraint is violated by: "+ str(g_max))
             else:
-                print("Point is feasible. Maximum constraint violation is: " + str(g_max))
+                logging.info("Point is feasible. Maximum constraint violation is: " + str(g_max))
         else:
-            print(solver_message)
+            logging.debug(solver_message)
             x = np.full(len(vars_original), np.inf)
             obj_val = np.inf
     else:

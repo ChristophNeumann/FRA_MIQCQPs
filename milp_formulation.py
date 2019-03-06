@@ -6,13 +6,12 @@ import numbers
 #from model_manipulation import *
 from globals import time_limit_Lipschitz
 from globals import delta_enlargement
+import logging
 
 def milp_for_L(nablaG, D, x, y):
 
-#    print("Computing bigM values")
     M_u, M_v = bigMNabla(nablaG, y) #Compute bigM values
 
-#    print("Computation of bigM done. Maximum value is:  " + str(max(max(M_u),max(M_v))))
     model = ConcreteModel()
     model.m = len(y) #We differentiate wrt all integer variables
     model.n = len(x)
@@ -86,26 +85,22 @@ def milp_for_L(nablaG, D, x, y):
     model.D = Constraint(model.I, rule = migrate_linear_constrs)
     # Write the LP file for debugging purposes
 #    model.write('model.lp')
-    # Solver
     # possible choices: 'ipopt' (NLP), 'glpk' (MIP), 'gurobi'
     opt = SolverFactory('gurobi')
+    opt.options["OptimalityTol"] = 1e-2
     opt.options["TimeLimit"] = time_limit_Lipschitz
     # Solve statement
     result_obj = opt.solve(model, tee=False)
     runtime = result_obj.solver.time
     if runtime < time_limit_Lipschitz:
         L_const = value(model.obj)
-        print('Upper bound is:' + str(result_obj['Problem'][0]['Upper bound']))
-        print('Lipschitz constant is: ' + str(L_const))
-        print(var_value(get_model_vars(model)))
+        logging.debug('Upper bound is:' + str(result_obj['Problem'][0]['Upper bound']))
+        logging.info('Lipschitz constant is: ' + str(L_const))
+        logging.debug(var_value(get_model_vars(model)))
         ub = result_obj['Problem'][0]['Upper bound']
         L_const = max(L_const,ub)
-        print(L_const)
     else:
         L_const = np.inf
-   # print("Found Lipschitz constant is:   " + str(L_const))
-
-#    model.pprint()
 
     return L_const, runtime
 
@@ -178,7 +173,6 @@ def bigM(Q,beta,lb,ub):
                 M_v[i] += Q[i,j]*ub[j]
         M_u[i] = max(M_u[i] + beta[i], 0)
         M_v[i] = max(-M_v[i] + beta[i], 0)
-        print(M_u)
-        print(M_v)
+
 
     return M_u, M_v

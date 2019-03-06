@@ -6,6 +6,7 @@ import os
 import pandas as pd
 import pickle
 from FRA_SOR import *
+import logging
 from globals import time_limit_SOR
 
 def load_pyomo_model(problem_name):
@@ -113,14 +114,14 @@ def solve_with_bonmin(model,algorithm = 'b-ifp', time_limit = 600.0, cutoff_valu
     else:
         opt = SolverFactory('bonmin')
         if cutoff_value > float('-inf'):
-            print('cutoff is set to: ' + str(cutoff_value))
+            logging.info('cutoff is set to: ' + str(cutoff_value))
             opt.options['bonmin.cutoff'] = cutoff_value
         if algorithm == 'b-hyb':
             opt.options['bonmin.algorithm'] = 'b-hyb'
-            print('using b-hyb')
+            logging.info('using b-hyb')
         else:
             opt.options['bonmin.algorithm'] = 'b-ifp'
-            print('using b-ifp')
+            logging.info('using b-ifp')
         # Set Options for solver.
         opt.options['bonmin.solution_limit'] = '1'
         opt.options['bonmin.time_limit'] = time_limit
@@ -139,7 +140,7 @@ def solve_with_bonmin(model,algorithm = 'b-ifp', time_limit = 600.0, cutoff_valu
                 solver_message = opt.solve(model, tee=False)
                 time = solver_message.solver.time
             except:
-                print('Could not solve this problem due to a value error')
+                logging.warning('Could not solve this problem using bonmin')
                 time = np.inf
                 solver_message = None
 
