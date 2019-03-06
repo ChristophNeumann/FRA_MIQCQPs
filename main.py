@@ -6,7 +6,7 @@ from FRA_SOR import *
 from algorithm_analysis import *
 sys.setrecursionlimit(5000)
 
-#logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 testbed = 'current'
 test_instances = read_test_instances(testbed)
 #test_instances = testset_bonmin

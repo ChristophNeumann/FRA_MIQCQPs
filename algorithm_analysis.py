@@ -59,7 +59,8 @@ def run_SOR(test_problems):
 
     result_matrix = []
     for idx, name in enumerate(test_problems):
-        print('Testing problem ', name)
+        print("#################################################")
+        print('Testing problem ', name, "(", idx + 1, "/", len(test_problems),")")
         original_model = load_pyomo_model(name)
         current_model = original_model.clone()
         datalist = get_model_data_for_print(current_model)
@@ -68,15 +69,18 @@ def run_SOR(test_problems):
         result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['vars','constrs','time L', 'time SOR', 'obj', 'constr_value'])
         result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']] = result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']].apply(pd.to_numeric)
         result_dataframe.index = test_problems[:idx+1]
+        print_results(result)
         save_obj(result_dataframe,'intermediate_results')
-        print("#################################################")
-        print(str(idx+1) + "/" + str(len(test_problems)) + "done.")
-        print("Value obtained by SOR is: " + str(result['obj']))
-        print("#################################################")
+
         del original_model
         del current_model
         del result
     return result_dataframe
+
+def print_results(result):
+    print("Value obtained by SOR is: ", result['obj'])
+    print("Overall time for the computation of Lipschitz constants is: ", result['time_ips'])
+    print("Time for SOR is: ", result['time'])
 
 def run_bonmin(test_problems,cutoff_values, time_limit = 600.0):
 
