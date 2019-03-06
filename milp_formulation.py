@@ -4,7 +4,7 @@ from pyomo.repn import generate_canonical_repn
 from model_information import *
 import numbers
 #from model_manipulation import *
-from globals import time_limit_Lipschitz
+from globals import time_limit_SOR
 from globals import delta_enlargement
 import logging
 
@@ -88,11 +88,11 @@ def milp_for_L(nablaG, D, x, y):
     # possible choices: 'ipopt' (NLP), 'glpk' (MIP), 'gurobi'
     opt = SolverFactory('gurobi')
     opt.options["OptimalityTol"] = 1e-2
-    opt.options["TimeLimit"] = time_limit_Lipschitz
+    opt.options["TimeLimit"] = time_limit_SOR
     # Solve statement
     result_obj = opt.solve(model, tee=False)
     runtime = result_obj.solver.time
-    if runtime < time_limit_Lipschitz:
+    if runtime < time_limit_SOR:
         L_const = value(model.obj)
         logging.debug('Upper bound is:' + str(result_obj['Problem'][0]['Upper bound']))
         logging.info('Lipschitz constant is: ' + str(L_const))

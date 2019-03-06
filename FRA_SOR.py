@@ -12,7 +12,7 @@ def SOR(m):
     eips, time_IPS = enlarged_IPS(m)
     if eips:
         opt = SolverFactory(nonlinear_solver)
-        opt.options["max_cpu_time"] = time_limit_SOR
+        opt.options["max_cpu_time"] = time_limit_SOR - time_IPS
 #        logging.debug(eips.pprint())
         solver_message = opt.solve(eips, tee= write_log)
         runtime = solver_message.solver.time

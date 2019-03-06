@@ -1,6 +1,5 @@
 import numpy as np
-time_limit_Lipschitz = 3600.0
-time_limit_SOR = 600.0
+time_limit_SOR = 1800.0 # joint time limit for SOR and Lipschitz-computation
 nonlinear_solver = 'ipopt'
 write_log = False
 feas_tol_SOR = 1e-4
