@@ -4,12 +4,10 @@ from pyomo.repn import generate_canonical_repn
 from model_information import *
 import numbers
 #from model_manipulation import *
-from globals import time_limit_SOR
-from globals import delta_enlargement
+import globals
 import logging
 
 def milp_for_L(nablaG, D, x, y):
-
     M_u, M_v = bigMNabla(nablaG, y) #Compute bigM values
 
     model = ConcreteModel()
@@ -21,8 +19,8 @@ def milp_for_L(nablaG, D, x, y):
 
     def bounds_y(model,j):
         lb,ub = get_bounds(y)
-        lb_adapted = math.ceil(lb[j]) + 1/2 - delta_enlargement
-        ub_adapted = math.floor(ub[j]) - 1/2 + delta_enlargement
+        lb_adapted = math.ceil(lb[j]) + 1/2 - globals.delta_enlargement
+        ub_adapted = math.floor(ub[j]) - 1/2 + globals.delta_enlargement
         return  lb_adapted , ub_adapted # Compute Lipschitz constant on slightly larger set
 
     def bounds_x(model,j):
@@ -88,11 +86,11 @@ def milp_for_L(nablaG, D, x, y):
     # possible choices: 'ipopt' (NLP), 'glpk' (MIP), 'gurobi'
     opt = SolverFactory('gurobi')
     opt.options["OptimalityTol"] = 1e-2
-    opt.options["TimeLimit"] = time_limit_SOR
+    opt.options["TimeLimit"] = globals.time_limit_SOR
     # Solve statement
     result_obj = opt.solve(model, tee=False)
     runtime = result_obj.solver.time
-    if runtime < time_limit_SOR:
+    if runtime < globals.time_limit_SOR:
         L_const = value(model.obj)
         logging.debug('Upper bound is:' + str(result_obj['Problem'][0]['Upper bound']))
         logging.info('Lipschitz constant is: ' + str(L_const))
@@ -112,8 +110,8 @@ def bigMNabla(nablaG, y):
     M_u = np.zeros(p)
     M_v = np.zeros(p)
     lb, ub = get_bounds(y)
-    lb = np.ceil(np.array(lb)) + (1/2-delta_enlargement)*np.ones(len(lb))
-    ub = np.floor(np.array(ub)) + (-1/2+delta_enlargement)*np.ones(len(ub))
+    lb = np.ceil(np.array(lb)) + (1/2-globals.delta_enlargement)*np.ones(len(lb))
+    ub = np.floor(np.array(ub)) + (-1/2+globals.delta_enlargement)*np.ones(len(ub))
 
     for i in range(0,p):
         if isinstance(nablaG[i],numbers.Number):

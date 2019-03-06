@@ -5,7 +5,8 @@ write_log = False
 feas_tol_SOR = 1e-4
 
 ABS_BOUND = 1E12 #Lower bound for objective value/ variables in case of unboundedness
-delta_enlargement = 1 - 1e-4 # Enlargement parameter
+global delta_enlargement # We want to change this parameter
+delta_enlargement = 1-1e-4 # Enlargement parameter
 
 testset_bonmin = ['autocorr_bern20_03', 'autocorr_bern25_03', 'cvxnonsep_normcon20r',
        'cvxnonsep_normcon30r', 'ex1223a', 'ex4', 'genpooling_lee1',
@@ -27,3 +28,4 @@ obj_vals = np.array([-3.98880458e+00, -2.99832064e+01, -1.46549272e+01, -1.48031
         2.18434169e+02,  3.06442287e+02,  2.15850557e+02,  3.03063561e+02])
 
 opt_gap_bonmin = 1e-4
+
