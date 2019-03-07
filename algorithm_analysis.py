@@ -7,7 +7,7 @@ import pandas as pd
 import pickle
 from FRA_SOR import *
 import logging
-from globals import time_limit_SOR
+import globals
 
 def load_pyomo_model(problem_name):
     testinstance = importlib.import_module(problem_name)
@@ -58,6 +58,7 @@ def get_data_matrix(test_problems):
 def run_SOR(test_problems):
 
     result_matrix = []
+    print("\n \nTesting SOR with delta =", globals.delta_enlargement, "\n\n")
     for idx, name in enumerate(test_problems):
         print("#################################################")
         print('Testing problem ', name, "(", idx + 1, "/", len(test_problems),")")
@@ -70,7 +71,7 @@ def run_SOR(test_problems):
         result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']] = result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']].apply(pd.to_numeric)
         result_dataframe.index = test_problems[:idx+1]
         print_results(result)
-        save_obj(result_dataframe,'intermediate_results')
+        save_obj(result_dataframe,'intermediate_results_' + str(globals.delta_enlargement))
 
         del original_model
         del current_model
@@ -82,14 +83,14 @@ def print_results(result):
     print("Overall time for the computation of Lipschitz constants is: ", result['time_ips'])
     print("Time for SOR is: ", result['time'])
 
-def run_bonmin(test_problems,cutoff_values, time_limit = 600.0):
+def run_bonmin(test_problems,cutoff_values):
 
     result_matrix = []
     for idx, name in enumerate(test_problems):
         print('Testing problem ', name)
         current_model = load_pyomo_model(name)
         result_bonmin = solve_with_bonmin(current_model, 'b-hyb', \
-                                          cutoff_value=cutoff_values[idx], time_limit = time_limit)
+                                          cutoff_value=cutoff_values[idx])
         result_matrix.append([result_bonmin['time'],result_bonmin['obj']])
         result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['time_bonmin','obj_bonmin'])
         result_dataframe.index = test_problems[:idx+1]
@@ -102,8 +103,9 @@ def save_obj(obj, name ):
     with open('results/'+ name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
-def solve_with_bonmin(model,algorithm = 'b-ifp', time_limit = 600.0, cutoff_value = float('-inf'), name = 'default_problem', save_to_file = False):
+def solve_with_bonmin(model,algorithm = 'b-ifp', cutoff_value = float('-inf'), name = 'default_problem', save_to_file = False):
 
+    time_limit = globals.time_limit_Bonmin
     if algorithm == 'gurobi':
         opt = SolverFactory('gurobi',solver_io="python")
         opt.options["Cutoff"] = cutoff_value

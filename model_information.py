@@ -128,14 +128,15 @@ def get_linear_constraints(m):
     return linear_constrs
 
 
-def max_constr_value(m):
+def max_constr_value_int_constr(m):
     """Returns the maximum value of all constraint functions of a pyomo model m for a given point x,
     implicitly rearranging all constraints to g_i(x) <= 0 and computing max(g_i(x))"""
     constraints = list(m.component_objects(Constraint))
     if len(constraints) >= 2:
             g_vals = np.zeros(len(constraints))
             for idx, constr in enumerate(constraints):
-                g_vals[idx] = constr_value(constr)
+                if contains_some_integer_vars(constr):
+                    g_vals[idx] = constr_value(constr)
             max_violation = np.max(g_vals)
             return max_violation
     else:

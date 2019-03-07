@@ -11,9 +11,9 @@ def add_objective_bound(m):
 def enlarged_IPS(m):
     ''' Computes the enlarged inner parallel set of a MIQCQP m.
     There are three enlargement steps
-    1. Compute the EIPS of box constraints
-    2. Compute the EIPS of nonlinear constraints
-    3. Compute the EIPS of polyhedral constraints that are NO box constraints
+    1. Compute the EIPS of nonlinear constraints
+    2. Compute the EIPS of polyhedral constraints that are NO box constraints
+    3. Compute the EIPS of box constraints
     '''
 
     time_ips = 0

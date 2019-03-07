@@ -21,9 +21,10 @@ def SOR(m):
             logging.debug(var_value(get_model_vars(eips)))
             set_var_vals(vars_original, x, is_int)
             obj_val = value(m.obj)
-            g_max = max_constr_value(m)
+            g_max = max_constr_value_int_constr(m)
             if g_max > feas_tol_SOR:
                 logging.warning("A constraint is violated by: "+ str(g_max))
+
             else:
                 logging.info("Point is feasible. Maximum constraint violation is: " + str(g_max))
         else:
