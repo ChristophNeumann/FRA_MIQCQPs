@@ -35,8 +35,8 @@ def get_model_data_for_print(m):
     n_of_vars = len(is_int)
     n_of_int_vars = np.sum(is_int)
     n_of_bin_vars = get_number_of_binary_vars(m)
-
-    return [str((n_of_vars,n_of_int_vars,n_of_bin_vars)),str(p_quadrupel)]
+    model_data = {'var': str((n_of_vars,n_of_int_vars,n_of_bin_vars)), 'constrs': str(p_quadrupel) }
+    return model_data
 
 def get_data_matrix(test_problems):
     '''Creates a pandas data matrix for test problems, containing
@@ -62,26 +62,23 @@ def run_SOR(test_problems):
     for idx, name in enumerate(test_problems):
         print("#################################################")
         print('Testing problem ', name, "(", idx + 1, "/", len(test_problems),")")
-        original_model = load_pyomo_model(name)
-        current_model = original_model.clone()
-        datalist = get_model_data_for_print(current_model)
-        result = SOR(current_model)
-        result_matrix.append([datalist[0],datalist[1],result['time_ips'],result['time'],result['obj'],result['g']])
+        model = load_pyomo_model(name)
+        model_data = get_model_data_for_print(model)
+        result = SOR(model)
+        print_results(result)
+        result_matrix.append([model_data['var'],model_data['constrs'],result['time_ips'],result['time_SOR'],result['obj'],result['g']])
         result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['vars','constrs','time L', 'time SOR', 'obj', 'constr_value'])
         result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']] = result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']].apply(pd.to_numeric)
         result_dataframe.index = test_problems[:idx+1]
-        print_results(result)
         save_obj(result_dataframe,'intermediate_results_' + str(globals.delta_enlargement))
-
-        del original_model
-        del current_model
+        del model
         del result
     return result_dataframe
 
 def print_results(result):
     print("Value obtained by SOR is: ", result['obj'])
     print("Overall time for the computation of Lipschitz constants is: ", result['time_ips'])
-    print("Time for SOR is: ", result['time'])
+    print("Time for SOR is: ", result['time_SOR'])
 
 def run_bonmin(test_problems,cutoff_values):
 

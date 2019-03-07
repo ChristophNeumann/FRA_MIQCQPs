@@ -12,7 +12,7 @@ def SOR(m):
     eips, time_IPS = enlarged_IPS(m)
     if eips:
         opt = SolverFactory(nonlinear_solver)
-        opt.options["max_cpu_time"] = time_limit_SOR - time_IPS
+        opt.options["max_cpu_time"] = overall_time_limit_SOR - time_IPS
 #        logging.debug(eips.pprint())
         solver_message = opt.solve(eips, tee= write_log)
         runtime = solver_message.solver.time
@@ -39,5 +39,5 @@ def SOR(m):
     if number_nonlinear_constrs(m) == 1:
         g_value = constr_value(get_nonlinear_constrs(m)[0])
     else: g_value = -np.inf
-    return {'x' : x, 'obj' : obj_val, 'time' : runtime, 'time_ips':time_IPS, 'g':g_value}
+    return {'x' : x, 'obj' : obj_val, 'time_SOR' : runtime, 'time_ips':time_IPS, 'g':g_value}
 

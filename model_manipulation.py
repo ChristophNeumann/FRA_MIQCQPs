@@ -119,16 +119,6 @@ def activate_nonlinear_constrs(m):
              constr.activate()
 
 
-def add_box_constraints(m):
-    for var in get_model_vars(m):
-        if (var.bounds is None) or ((var.bounds[0] == None) and (var.bounds[1] == None)):
-            var.setlb(-globals.ABS_BOUND)
-            var.setub(globals.ABS_BOUND)
-        elif var.bounds[0] is None:
-            var.setlb(-globals.ABS_BOUND)
-        elif var.bounds[1] is None:
-            var.setub(globals.ABS_BOUND)
-
 def set_var_vals(var_list,value_list,is_int):
     for idx,var in enumerate(var_list):
         if(is_int[idx]):
