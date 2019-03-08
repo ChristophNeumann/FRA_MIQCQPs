@@ -1,5 +1,4 @@
 from pyomo.environ import *
-from model_manipulation import *
 
 m = ConcreteModel()
 m.y1 = Var(within=Integers, bounds=(0, 5))

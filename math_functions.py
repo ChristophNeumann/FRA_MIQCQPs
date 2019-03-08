@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from diophantine import *
+import logging
 
 
 
@@ -17,6 +18,8 @@ def floor_g(a, g):
     result = a
     if g != 0:
         result = math.floor(a) - (math.floor(a) % g)
+        if (a-result) >= g -1e-6:
+            logging.warning("A righthandside may be unvoluntarily rounded. Confirm!")
     return result
 
 

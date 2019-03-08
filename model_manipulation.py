@@ -32,10 +32,10 @@ def enlarged_IPS(m):
             omega = get_enlargement_nonlinear(constr)
             time_ips += runtime_i
             if is_leq_constr(constr):
-                constr.set_value(constr.body <= constr.upper() - 1 / 2 * L_infty +
+                constr.set_value(constr.body <= floor_g(constr.upper(),omega) - 1 / 2 * L_infty +
                                  globals.enlargement_parameter_general * omega)
             else:
-                constr.set_value(-constr.body <= -constr.lower() - 1 / 2 * L_infty +
+                constr.set_value(-constr.body <= floor_g(-constr.lower(),omega) - 1 / 2 * L_infty +
                                  globals.enlargement_parameter_general * omega)
 
 

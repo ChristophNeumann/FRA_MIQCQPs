@@ -3,6 +3,7 @@ from testmodels.model_t import *
 import sys
 import importlib.util
 from model_information import *
+from model_manipulation import*
 import globals
 sys.path.append('testmodels')  # For loading models as modules
 import logging
@@ -25,5 +26,12 @@ class MyTestCase(unittest.TestCase):
         L1, runtime = compute_lipschitz(testinstance1.m.c1, testinstance1.m)
         self.assertGreaterEqual(L1, 30.99)
         self.assertLessEqual(L1, 31)
+
+    def test_enlargement_for_nonlinear_constr(self):
+        testinstance = importlib.import_module('model_enlargement')
+        omega = get_enlargement_nonlinear(testinstance.m.c1)
+        self.assertEqual(omega,2)
+        self.assertEqual(floor_g(testinstance.m.c1.upper(),omega),10)
+
 if __name__ == '__main__':
     unittest.main()
