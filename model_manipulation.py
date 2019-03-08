@@ -5,9 +5,6 @@ from pyomo.repn import generate_canonical_repn
 import globals
 import logging
 
-def add_objective_bound(m):
-    m.obj_con = Constraint(expr = m.obj.expr >= -globals.ABS_BOUND)
-
 def enlarged_IPS(m):
     ''' Computes the enlarged inner parallel set of a MIQCQP m.
     There are three enlargement steps
@@ -23,7 +20,10 @@ def enlarged_IPS(m):
     is_int = bool_vec_is_int(eips)
     model_vars = get_model_vars(eips)
 
-    ## Step 1: nonlinear constrs.
+    logging.debug('Enlargement parameter for box constraints is: ' + str(globals.enlargement_parameter_box_constrs))
+    logging.debug('General enlargement parameter is: ' + str(globals.enlargement_parameter_general))
+
+    ## Step 1
     for constr in nonlinear_constrs:
         if not constr.equality:
             L_infty, runtime_i = compute_lipschitz(constr,eips)
@@ -32,25 +32,29 @@ def enlarged_IPS(m):
             omega = get_enlargement_nonlinear(constr)
             time_ips += runtime_i
             if is_leq_constr(constr):
-                constr.set_value(constr.body <= constr.upper() - 1 / 2 * L_infty + globals.delta_enlargement * omega)
+                constr.set_value(constr.body <= constr.upper() - 1 / 2 * L_infty +
+                                 globals.enlargement_parameter_general * omega)
             else:
-                constr.set_value(-constr.body <= -constr.lower() - 1/2*L_infty + globals.delta_enlargement * omega)
+                constr.set_value(-constr.body <= -constr.lower() - 1 / 2 * L_infty +
+                                 globals.enlargement_parameter_general * omega)
 
 
-    ## Step 2: EIPS of linear constrs
+    ## Step 2
     for constr in linear_constrs:
         coeff = get_coeff(constr, model_vars)
         beta = np.linalg.norm(coeff[is_int],ord=1)
         g = enlargement_param(coeff,is_int)
         if not constr.equality:
             if is_leq_constr(constr):
-                constr.set_value(constr.body <= floor_g(constr.upper(),g) - 1 / 2 * beta + globals.delta_enlargement * g)
+                constr.set_value(constr.body <= floor_g(constr.upper(),g) - 1 / 2 * beta +
+                                 globals.enlargement_parameter_general * g)
             else:
-                constr.set_value(-constr.body <= floor_g(-constr.lower(),g) - 1 / 2 * beta + globals.delta_enlargement * g)
+                constr.set_value(-constr.body <= floor_g(-constr.lower(),g) - 1 / 2 * beta +
+                                 globals.enlargement_parameter_general * g)
 
-    ## Step 3: Enlarge box constraints
+    ## Step 3
     EIPS_box_constrs(model_vars)
-    cont_relax_model(model_vars) # Integral variables become continuous
+    cont_relax_model(model_vars)
     return eips, time_ips
 
 def fill_with_zeros(nablaG,index_inactive):
@@ -89,9 +93,9 @@ def box_constrs_to_expr(m, in_vars):
 
 def enlarge_box_constraint(var):
     if (var.bounds is not None) and (var.bounds[0] is not None):
-        var.setlb(math.ceil(var.bounds[0]) + 1/2 - globals.delta_enlargement)
+        var.setlb(math.ceil(var.bounds[0]) + 1 / 2 - globals.enlargement_parameter_box_constrs)
     if (var.bounds is not None) and (var.bounds[1] is not None):
-        var.setub(math.floor(var.bounds[1]) - 1/2 + globals.delta_enlargement)
+        var.setub(math.floor(var.bounds[1]) - 1 / 2 + globals.enlargement_parameter_box_constrs)
 
 
 def cont_relax_model(model_vars):

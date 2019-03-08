@@ -58,7 +58,7 @@ def get_data_matrix(test_problems):
 def run_SOR(test_problems):
 
     result_matrix = []
-    print("\n \nTesting SOR with delta =", globals.delta_enlargement, "\n\n")
+    print("\n \nTesting SOR with delta =", globals.enlargement_parameter_box_constrs, "\n\n")
     for idx, name in enumerate(test_problems):
         print("#################################################")
         print('Testing problem ', name, "(", idx + 1, "/", len(test_problems),")")
@@ -70,7 +70,7 @@ def run_SOR(test_problems):
         result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['vars','constrs','time L', 'time SOR', 'obj', 'constr_value'])
         result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']] = result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']].apply(pd.to_numeric)
         result_dataframe.index = test_problems[:idx+1]
-        save_obj(result_dataframe,'intermediate_results_' + str(globals.delta_enlargement))
+        save_obj(result_dataframe,'intermediate_results_' + str(globals.enlargement_parameter_general))
         del model
         del result
     return result_dataframe
