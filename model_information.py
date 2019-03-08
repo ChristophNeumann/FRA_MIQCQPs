@@ -337,7 +337,7 @@ def get_enlargement_nonlinear(constr):
             except:
                 const = 0
             if const!=0:
-                coeff = np.append(coeff,grad._const) # coefficient of linear part. Gets appended so that coeff contains m+1 entries
+                coeff = np.append(coeff,grad._const) # Coeff contains m+1 entries
             coeff[i] = coeff[i]/2 # If we have y_1**2, we get coeff 2, but want 1.
             if any(coeff - np.floor(coeff) > 0): # If any value is no integer, we cannot enlarge the constraint
                 return 0

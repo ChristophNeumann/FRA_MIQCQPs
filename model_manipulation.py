@@ -23,7 +23,7 @@ def enlarged_IPS(m):
     logging.debug('Enlargement parameter for box constraints is: ' + str(globals.enlargement_parameter_box_constrs))
     logging.debug('General enlargement parameter is: ' + str(globals.enlargement_parameter_general))
 
-    ## Step 1
+    # Step 1
     for constr in nonlinear_constrs:
         if not constr.equality:
             L_infty, runtime_i = compute_lipschitz(constr,eips)
@@ -37,9 +37,7 @@ def enlarged_IPS(m):
             else:
                 constr.set_value(-constr.body <= floor_g(-constr.lower(),omega) - 1 / 2 * L_infty +
                                  globals.enlargement_parameter_general * omega)
-
-
-    ## Step 2
+    # Step 2
     for constr in linear_constrs:
         coeff = get_coeff(constr, model_vars)
         beta = np.linalg.norm(coeff[is_int],ord=1)
@@ -52,7 +50,7 @@ def enlarged_IPS(m):
                 constr.set_value(-constr.body <= floor_g(-constr.lower(),g) - 1 / 2 * beta +
                                  globals.enlargement_parameter_general * g)
 
-    ## Step 3
+    # Step 3
     EIPS_box_constrs(model_vars)
     cont_relax_model(model_vars)
     return eips, time_ips
@@ -62,12 +60,11 @@ def fill_with_zeros(nablaG,index_inactive):
         nablaG.insert(idx,0.0)
     return nablaG
 
-def compute_lipschitz(constr, model):
-    y = get_int_vars(model)
+def compute_lipschitz(constr, eips_before_polyhedral_enlargement):
+    y = get_int_vars(eips_before_polyhedral_enlargement)
     y_active, index_inactive = get_active_int_vars_from_constr(constr, y)
     nablaG = gradient_symb(constr, y_active)
     nablaG = fill_with_zeros(nablaG,index_inactive)
-    D = get_linear_constraints(model)
 
     if is_zero_vector(nablaG):
         L_infty = 0
@@ -79,8 +76,8 @@ def compute_lipschitz(constr, model):
         logging.debug("Constraint " + constr.name + " is linear in y")
 
     else:
-        x = get_cont_vars(model)
-        L_infty, runtime = milp_for_L(nablaG, D, x, y) # Main work is done here!
+        x = get_cont_vars(eips_before_polyhedral_enlargement)
+        L_infty, runtime = milp_for_L(nablaG, eips_before_polyhedral_enlargement, x, y)
     return L_infty, runtime
 
 def box_constrs_to_expr(m, in_vars):
@@ -93,9 +90,9 @@ def box_constrs_to_expr(m, in_vars):
 
 def enlarge_box_constraint(var):
     if (var.bounds is not None) and (var.bounds[0] is not None):
-        var.setlb(math.ceil(var.bounds[0]) + 1 / 2 - globals.enlargement_parameter_box_constrs)
+        var.setlb(math.ceil(var.bounds[0]) + 0.5 - globals.enlargement_parameter_box_constrs)
     if (var.bounds is not None) and (var.bounds[1] is not None):
-        var.setub(math.floor(var.bounds[1]) - 1 / 2 + globals.enlargement_parameter_box_constrs)
+        var.setub(math.floor(var.bounds[1]) - 0.5 + globals.enlargement_parameter_box_constrs)
 
 
 def cont_relax_model(model_vars):

@@ -7,7 +7,10 @@ import numbers
 import globals
 import logging
 
-def milp_for_L(nablaG, D, x, y):
+def milp_for_L(nablaG, eips_before_polyhedral_enlargement, x, y):
+
+    D = get_linear_constraints(eips_before_polyhedral_enlargement)
+    is_int = bool_vec_is_int(eips_before_polyhedral_enlargement)
     M_u, M_v = bigMNabla(nablaG, y) #Compute bigM values
 
     model = ConcreteModel()
