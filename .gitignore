@@ -3,6 +3,9 @@
 #except Python files
 !*.py
 !/testbed/
+!/testbed/archive
+!/testbed/archive/error
+!/testbed/archive/error/*.py
 !/testbed/*.txt
 !/results/
 !/results/Evaluation_Paper.ipynb
