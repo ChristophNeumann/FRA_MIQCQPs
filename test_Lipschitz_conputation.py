@@ -1,5 +1,5 @@
 import unittest
-from testmodels.model_t import *
+from testmodels.testmodel1_Lipschitz import *
 import sys
 import importlib.util
 from model_information import *
@@ -10,7 +10,7 @@ import logging
 
 class MyTestCase(unittest.TestCase):
     def test_Lipschitz_constrant_from_test_model(self):
-        testinstance1 = importlib.import_module('model_t')
+        testinstance1 = importlib.import_module('testmodel1_Lipschitz')
         testinstance2 = importlib.import_module('exPaper')
         for delta_enlargement in np.linspace(0.5,0.9,10):
             globals.enlargement_parameter_box_constrs = delta_enlargement
@@ -28,10 +28,17 @@ class MyTestCase(unittest.TestCase):
         self.assertLessEqual(L1, 31)
 
     def test_enlargement_for_nonlinear_constr(self):
-        testinstance = importlib.import_module('model_enlargement')
+        testinstance = importlib.import_module('testmodel_enlargement')
         omega = get_enlargement_nonlinear(testinstance.m.c1)
         self.assertEqual(omega,2)
         self.assertEqual(floor_g(testinstance.m.c1.upper(),omega),10)
+
+    def test_if_enlarged_inner_parallel_set_is_as_expected(self):
+        testinstance = importlib.import_module('testmodel2_enlargement')
+        globals.enlargement_parameter_box_constrs = 0.5
+        eips = enlarged_IPS(testinstance.m)[0]
+        self.assertEqual(eips.c2.upper(),-1+2*globals.enlargement_parameter_general)
+        self.assertEqual(eips.c1.upper(), 6+2*globals.enlargement_parameter_general)
 
 if __name__ == '__main__':
     unittest.main()

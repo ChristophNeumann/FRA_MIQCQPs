@@ -7,28 +7,49 @@ import logging
 
 def enlarged_IPS(m):
     ''' Computes the enlarged inner parallel set of a MIQCQP m.
-    There are three enlargement steps
-    1. Compute the EIPS of nonlinear constraints
-    2. Compute the EIPS of polyhedral constraints that are NO box constraints
-    3. Compute the EIPS of box constraints
+    There are four enlargement steps
+    1. Tighten linear constraints for obtaining a proper model for the computation of the Lipschitz constants
+    2. Compute the EIPS of nonlinear constraints
+    3. Compute the EIPS of polyhedral constraints that are NO box constraints
+    4. Compute the EIPS of box constraints
     '''
 
-    time_ips = 0
     eips = m.clone()
-    linear_constrs = get_linear_constraints(eips)
-    nonlinear_constrs = get_nonlinear_constrs(eips)
-    is_int = bool_vec_is_int(eips)
     model_vars = get_model_vars(eips)
 
     logging.debug('Enlargement parameter for box constraints is: ' + str(globals.enlargement_parameter_box_constrs))
     logging.debug('General enlargement parameter is: ' + str(globals.enlargement_parameter_general))
 
-    ## Step 1
+    tighten_linear_constrs(eips)
+    time_ips = EIPS_nonlinear_constrs(eips)
+    if time_ips > globals.overall_time_limit_SOR:
+        eips = None
+    EIPS_linear_constrs(eips)
+    EIPS_box_constrs(model_vars)
+    cont_relax_model(model_vars)
+    return eips, time_ips
+
+def tighten_linear_constrs(eips):
+    linear_constrs = get_linear_constraints(eips)
+    is_int = bool_vec_is_int(eips)
+    model_vars = get_model_vars(eips)
+    for constr in linear_constrs:
+        coeff = get_coeff(constr, model_vars)
+        g = enlargement_param(coeff,is_int)
+        if not constr.equality:
+            if is_leq_constr(constr):
+                constr.set_value(constr.body <= floor_g(constr.upper(),g))
+            else:
+                constr.set_value(-constr.body <= floor_g(-constr.lower(),g))
+
+def EIPS_nonlinear_constrs(eips):
+    time_ips = 0
+    nonlinear_constrs = get_nonlinear_constrs(eips)
     for constr in nonlinear_constrs:
         if not constr.equality:
             L_infty, runtime_i = compute_lipschitz(constr,eips)
             if L_infty == np.inf:
-                return None, runtime_i # EIPS cannot be computed
+                return globals.overall_time_limit_SOR + 1 # EIPS cannot be computed
             omega = get_enlargement_nonlinear(constr)
             time_ips += runtime_i
             if is_leq_constr(constr):
@@ -37,25 +58,25 @@ def enlarged_IPS(m):
             else:
                 constr.set_value(-constr.body <= floor_g(-constr.lower(),omega) - 1 / 2 * L_infty +
                                  globals.enlargement_parameter_general * omega)
+    return time_ips
 
-
-    ## Step 2
+def EIPS_linear_constrs(eips):
+    linear_constrs = get_linear_constraints(eips)
+    is_int = bool_vec_is_int(eips)
+    model_vars = get_model_vars(eips)
     for constr in linear_constrs:
         coeff = get_coeff(constr, model_vars)
         beta = np.linalg.norm(coeff[is_int],ord=1)
         g = enlargement_param(coeff,is_int)
         if not constr.equality:
             if is_leq_constr(constr):
-                constr.set_value(constr.body <= floor_g(constr.upper(),g) - 1 / 2 * beta +
+                constr.set_value(constr.body <= constr.upper() - 1 / 2 * beta +
                                  globals.enlargement_parameter_general * g)
             else:
-                constr.set_value(-constr.body <= floor_g(-constr.lower(),g) - 1 / 2 * beta +
+                constr.set_value(-constr.body <= -constr.lower() - 1 / 2 * beta +
                                  globals.enlargement_parameter_general * g)
 
-    ## Step 3
-    EIPS_box_constrs(model_vars)
-    cont_relax_model(model_vars)
-    return eips, time_ips
+
 
 def fill_with_zeros(nablaG,index_inactive):
     for idx in index_inactive:

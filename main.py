@@ -7,8 +7,8 @@ from algorithm_analysis import *
 sys.setrecursionlimit(5000)
 
 #logging.basicConfig(level=logging.DEBUG)
-RUN_SOR = True
-RUN_BONMIN = False
+RUN_SOR = False
+RUN_BONMIN = True
 if RUN_SOR:
     testbed = 'all_instances'
     test_instances = read_all_test_instances()
@@ -20,4 +20,5 @@ if RUN_BONMIN:
     testbed = 'SOR_succ'
     cutoff_values =np.load(r'results/vals_SOR.npy')
     test_instances = read_test_instances(testbed)
-    run_bonmin(test_instances, cutoff_values)
+    res_bonmin = run_bonmin(test_instances, cutoff_values)
+    save_obj(res_bonmin,'res_bonmin')
