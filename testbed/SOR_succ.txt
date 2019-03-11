@@ -5,7 +5,12 @@ cvxnonsep_normcon30r
 ex1223a
 ex4
 genpooling_lee1
+genpooling_lee2
+genpooling_meyer10
 genpooling_meyer15
+ndcc12
+ndcc14
+ndcc15
 ndcc16
 nous1
 nous2
@@ -19,6 +24,8 @@ smallinvDAXr4b150-165
 smallinvDAXr4b200-220
 smallinvDAXr5b150-165
 smallinvDAXr5b200-220
+sonet20v6
+sonet24v2
 sporttournament06
 sporttournament08
 sporttournament10
@@ -31,12 +38,4 @@ sporttournament24
 sporttournament26
 sporttournament28
 sporttournament30
-sporttournament32
-sporttournament34
-sporttournament36
-sporttournament38
-sporttournament40
-sporttournament42
-sporttournament46
-sporttournament48
 supplychain

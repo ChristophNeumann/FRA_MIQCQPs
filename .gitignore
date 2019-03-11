@@ -8,6 +8,9 @@
 !/testbed/archive/error/*.py
 !/testbed/*.txt
 !/results/
+!/results/SOR_all_instances_0.5.pkl
+!/results/SOR_all_instances_0.75.pkl
+!/results/SOR_all_instances_0.9999.pkl
 !/results/Evaluation_Paper.ipynb
 !/results/intermediate_results.pkl
 !/testmodels
