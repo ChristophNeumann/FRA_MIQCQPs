@@ -24,9 +24,10 @@ def enlarged_IPS(m):
     time_ips = EIPS_nonlinear_constrs(eips)
     if time_ips > globals.overall_time_limit_SOR:
         eips = None
-    EIPS_linear_constrs(eips)
-    EIPS_box_constrs(model_vars)
-    cont_relax_model(model_vars)
+    else:
+        EIPS_linear_constrs(eips)
+        EIPS_box_constrs(model_vars)
+        cont_relax_model(model_vars)
     return eips, time_ips
 
 def tighten_linear_constrs(eips):
