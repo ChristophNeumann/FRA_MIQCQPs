@@ -39,7 +39,7 @@ def tighten_linear_constrs(eips):
             coeff = get_coeff(constr, model_vars)
             g = enlargement_param(coeff, is_int)
             if is_leq_constr(constr):
-                if -constr.lower() != floor_g(-constr.lower(),g):
+                if constr.upper() != floor_g(constr.upper(),g):
                     logging.info('Bounds get changed from ' + str(constr.upper())
                                  + ' to ' + str(floor_g(constr.upper(), g)))
                 constr.set_value(constr.body <= floor_g(constr.upper(),g))
