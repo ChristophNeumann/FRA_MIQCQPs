@@ -13,6 +13,7 @@
 !/results/SOR_all_instances_0.9999.pkl
 !/results/Evaluation_Paper.ipynb
 !/results/intermediate_results.pkl
+!/results/vals_SOR.npy
 !/testmodels
 !/testmodels/*.py
 
