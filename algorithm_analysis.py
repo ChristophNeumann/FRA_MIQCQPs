@@ -89,8 +89,7 @@ def run_bonmin(test_problems,cutoff_values):
     for idx, name in enumerate(test_problems):
         print('Testing problem ', name)
         current_model = load_pyomo_model(name)
-        result_bonmin = solve_with_bonmin(current_model, 'b-hyb', \
-                                          cutoff_value=cutoff_values[idx])
+        result_bonmin = solve_with_bonmin(current_model, cutoff_value=cutoff_values[idx])
         result_matrix.append([result_bonmin['time'],result_bonmin['obj']])
         result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['time_bonmin','obj_bonmin'])
         result_dataframe.index = test_problems[:idx+1]
@@ -103,9 +102,10 @@ def save_obj(obj, name ):
     with open('results/'+ name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
-def solve_with_bonmin(model,algorithm = 'b-ifp', cutoff_value = float('-inf'), name = 'default_problem', save_to_file = False):
+def solve_with_bonmin(model, cutoff_value = float('-inf'), name = 'default_problem', save_to_file = False):
 
     time_limit = globals.time_limit_Bonmin
+    algorithm = globals.benchmark_algorithm
     if algorithm == 'gurobi':
         opt = SolverFactory('gurobi',solver_io="python")
         opt.options["Cutoff"] = cutoff_value

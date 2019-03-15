@@ -1,5 +1,3 @@
-autocorr_bern20_03
-autocorr_bern25_03
 cvxnonsep_normcon20r
 cvxnonsep_normcon30r
 ex1223a
@@ -38,15 +36,4 @@ sonet21v6
 sonet22v4
 sonet23v6
 sonet24v2
-sporttournament06
-sporttournament08
-sporttournament10
-sporttournament12
-sporttournament16
-sporttournament18
-sporttournament20
-sporttournament22
-sporttournament24
-sporttournament26
-sporttournament28
 supplychain
