@@ -35,12 +35,18 @@ def tighten_linear_constrs(eips):
     is_int = bool_vec_is_int(eips)
     model_vars = get_model_vars(eips)
     for constr in linear_constrs:
-        coeff = get_coeff(constr, model_vars)
-        g = enlargement_param(coeff,is_int)
         if not constr.equality:
+            coeff = get_coeff(constr, model_vars)
+            g = enlargement_param(coeff, is_int)
             if is_leq_constr(constr):
+                if -constr.lower() != floor_g(-constr.lower(),g):
+                    logging.info('Bounds get changed from ' + str(constr.upper())
+                                 + ' to ' + str(floor_g(constr.upper(), g)))
                 constr.set_value(constr.body <= floor_g(constr.upper(),g))
             else:
+                if -constr.lower() != floor_g(-constr.lower(),g):
+                    logging.info('Bounds get changed from ' + str(-constr.lower())
+                                 + ' to ' + str(floor_g(-constr.lower(), g)))
                 constr.set_value(-constr.body <= floor_g(-constr.lower(),g))
 
 def EIPS_nonlinear_constrs(eips):
