@@ -66,8 +66,8 @@ def run_SOR(test_problems):
         model_data = get_model_data_for_print(model)
         result = SOR(model)
         print_results(result)
-        result_matrix.append([model_data['var'],model_data['constrs'],result['time_ips'],
-                              result['time_SOR'],result['obj'],result['g']])
+        result_matrix.append([model_data['var'] ,model_data['constrs'], result['time_ips'],
+                              result['time_SOR'], result['obj'], result['g']])
         result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['vars','constrs','time L', 'time SOR',
                                                                           'obj', 'constr_value'])
         result_dataframe[['time L', 'time SOR', 'obj', 'constr_value']] = \

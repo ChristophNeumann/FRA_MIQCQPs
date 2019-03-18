@@ -6,7 +6,7 @@ import globals
 from algorithm_analysis import *
 sys.setrecursionlimit(5000)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 RUN_SOR = False
 RUN_BONMIN = True
 if RUN_SOR:
