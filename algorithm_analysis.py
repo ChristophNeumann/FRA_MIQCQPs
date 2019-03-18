@@ -122,12 +122,8 @@ def solve_with_bonmin(model, cutoff_value = float('-inf'), name = 'default_probl
         if cutoff_value > float('-inf'):
             logging.info('cutoff is set to: ' + str(cutoff_value))
             opt.options['bonmin.cutoff'] = cutoff_value
-        if algorithm == 'b-hyb':
-            opt.options['bonmin.algorithm'] = 'b-hyb'
-            logging.info('using b-hyb')
-        else:
-            opt.options['bonmin.algorithm'] = 'b-ifp'
-            logging.info('using b-ifp')
+        opt.options['bonmin.algorithm'] = algorithm
+        logging.info('using' + str(algorithm))
         # Set Options for solver.
         opt.options['bonmin.solution_limit'] = '1'
         opt.options['bonmin.time_limit'] = time_limit
@@ -144,7 +140,10 @@ def solve_with_bonmin(model, cutoff_value = float('-inf'), name = 'default_probl
         else:
             try:
                 solver_message = opt.solve(model, tee=False)
-                time = solver_message.solver.time
+                if model_status(solver_message):
+                    time = solver_message.solver.time
+                else:
+                    time = np.inf
             except:
                 logging.warning('Could not solve this problem using bonmin')
                 time = np.inf

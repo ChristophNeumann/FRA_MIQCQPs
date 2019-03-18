@@ -18,7 +18,9 @@ if RUN_SOR:
         save_obj(result_SOR,'SOR_' + testbed + "_" + str(enlargement_parameter_box_constrs))
 if RUN_BONMIN:
     testbed = 'SOR_succ'
-    cutoff_values =np.load(r'results/vals_SOR.npy')
-    test_instances = read_test_instances(testbed)
-    res_bonmin = run_bonmin(test_instances, cutoff_values)
-    save_obj(res_bonmin,'res_bonmin')
+    for solver in ['B-BB','B-Hyb', 'B-iFP']:
+        globals.benchmark_algorithm = solver
+        cutoff_values =np.load(r'results/vals_SOR.npy')
+        test_instances = read_test_instances(testbed)
+        res_bonmin = run_bonmin(test_instances, cutoff_values)
+        save_obj(res_bonmin,'res_bonmin')
