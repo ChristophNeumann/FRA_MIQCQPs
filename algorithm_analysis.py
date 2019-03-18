@@ -86,12 +86,14 @@ def print_results(result):
 def run_bonmin(test_problems,cutoff_values):
 
     result_matrix = []
+    algorithm = globals.benchmark_algorithm
     for idx, name in enumerate(test_problems):
         print('Testing problem ', name)
         current_model = load_pyomo_model(name)
         result_bonmin = solve_with_bonmin(current_model, cutoff_value=cutoff_values[idx])
         result_matrix.append([result_bonmin['time'],result_bonmin['obj']])
-        result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['time_bonmin','obj_bonmin'])
+
+        result_dataframe = pd.DataFrame(np.array(result_matrix), columns=['time_'+algorithm,'obj_'+algorithm])
         result_dataframe.index = test_problems[:idx+1]
         save_obj(result_dataframe,'intermediate_results_bonmin')
         del current_model
@@ -104,9 +106,7 @@ def save_obj(obj, name ):
 
 def solve_with_bonmin(model, cutoff_value = float('-inf'), name = 'default_problem', save_to_file = False):
 
-    time_limit = globals.time_limit_Bonmin
-    algorithm = globals.benchmark_algorithm
-    if algorithm == 'gurobi':
+    if globals.benchmark_algorithm == 'gurobi':
         opt = SolverFactory('gurobi',solver_io="python")
         opt.options["Cutoff"] = cutoff_value
         opt.options["SolutionLimit"] = 1
@@ -122,16 +122,16 @@ def solve_with_bonmin(model, cutoff_value = float('-inf'), name = 'default_probl
         if cutoff_value > float('-inf'):
             logging.info('cutoff is set to: ' + str(cutoff_value))
             opt.options['bonmin.cutoff'] = cutoff_value
-        opt.options['bonmin.algorithm'] = algorithm
-        logging.info('using' + str(algorithm))
+        opt.options['bonmin.algorithm'] = globals.benchmark_algorithm
+        logging.info('using ' + str(globals.benchmark_algorithm))
         # Set Options for solver.
         opt.options['bonmin.solution_limit'] = '1'
-        opt.options['bonmin.time_limit'] = time_limit
+        opt.options['bonmin.time_limit'] = globals.time_limit_Bonmin
         if save_to_file:
             opt.options['bonmin.fp_log_level'] = '2'
             opt.options['bonmin.milp_log_level'] = '1'
             orig_stdout = sys.stdout
-            f = open('solver_log/'+ name + algorithm + '.txt', 'w')
+            f = open('solver_log/'+ name + globals.benchmark_algorithm + '.txt', 'w')
             sys.stdout = f
             solver_message = opt.solve(model,tee = True)
             sys.stdout = orig_stdout
@@ -140,9 +140,10 @@ def solve_with_bonmin(model, cutoff_value = float('-inf'), name = 'default_probl
         else:
             try:
                 solver_message = opt.solve(model, tee=False)
-                if model_status(solver_message):
+                if not(model_status(solver_message) == 'infeasible'):
                     time = solver_message.solver.time
                 else:
+                    logging.warning('Not obtaining a feasible point with bonmin for this problem')
                     time = np.inf
             except:
                 logging.warning('Could not solve this problem using bonmin')
@@ -156,9 +157,19 @@ def solve_with_bonmin(model, cutoff_value = float('-inf'), name = 'default_probl
         else:
             model.solutions.store_to(solver_message)
             obj = solver_message.solution.objective.get('obj').get('Value')
-            print('time B-Hyb:' + str(time))
-            print('objective B-Hyb: ' + str(obj))
+        print('time', globals.benchmark_algorithm, time)
+        print('objective', globals.benchmark_algorithm, obj)
 
     return {'time': time,
             'obj': obj,
              'solver_message': solver_message}
+
+def update_objective_value_epi_problems(result):
+    epi_subset = result['constr_value'] != float('-inf')
+    print('Updating objecitve values. Old vales are:')
+    print(result.loc[epi_subset, 'obj'])
+    print("new values are: ")
+    result.loc[epi_subset,'obj'] = np.array(result[epi_subset]['obj']+result[epi_subset]['constr_value'])
+    print(result.loc[epi_subset, 'obj'])
+    result = result.drop('constr_value',axis=1)
+    return result
